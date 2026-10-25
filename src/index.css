@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+:root {
+  --mist-white: #EFF4F2;
+  --eucalyptus-mist: #DDEBE5;
+  --pale-sage: #A5C9BC;
+  --eucalyptus-teal: #34796E;
+  --deep-botanical: #203A37;
+  --muted-sage: #648078;
+  --severity-medium: #C0772C;
+  --severity-high: #A8423F;
+}
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Noto Sans Telugu", "Noto Sans Kannada", "Noto Sans Devanagari", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --color-mist-white: var(--mist-white);
+  --color-eucalyptus-mist: var(--eucalyptus-mist);
+  --color-pale-sage: var(--pale-sage);
+  --color-eucalyptus-teal: var(--eucalyptus-teal);
+  --color-deep-botanical: var(--deep-botanical);
+  --color-muted-sage: var(--muted-sage);
+  --color-severity-medium: var(--severity-medium);
+  --color-severity-high: var(--severity-high);
+}
+
+body {
+  font-family: "Plus Jakarta Sans", "Noto Sans Telugu", "Noto Sans Kannada", "Noto Sans Devanagari", system-ui, -apple-system, sans-serif;
+  background-color: var(--mist-white);
+  color: var(--deep-botanical);
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Soft frosted glass card for Sylva */
+.sylva-card {
+  background-color: rgba(221, 235, 229, 0.68);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 10px 28px -4px rgba(52, 121, 110, 0.08), 0 4px 10px -2px rgba(52, 121, 110, 0.04);
+  border-radius: 1.25rem;
+}
+
+.sylva-card-interactive {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+}
+
+.sylva-card-interactive:hover {
+  box-shadow: 0 14px 32px -4px rgba(52, 121, 110, 0.12), 0 6px 14px -2px rgba(52, 121, 110, 0.06);
+}
+
+@keyframes sylva-drift-glow {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(35px, 45px) scale(1.08);
+  }
+  100% {
+    transform: translate(-25px, 20px) scale(0.96);
+  }
+}
+
+@keyframes sylva-drift-glow-reverse {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(-40px, -30px) scale(1.1);
+  }
+  100% {
+    transform: translate(30px, -20px) scale(0.94);
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--pale-sage);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-sage);
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Sylva",
+  "description": "AI crop disease and pest detection with actionable recommendations",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
