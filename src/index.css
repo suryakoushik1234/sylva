@@ -1,35 +1,98 @@
 @import "tailwindcss";
 
 :root {
-  --mist-white: #EFF4F2;
-  --eucalyptus-mist: #DDEBE5;
-  --pale-sage: #A5C9BC;
-  --eucalyptus-teal: #34796E;
-  --deep-botanical: #203A37;
-  --muted-sage: #648078;
-  --severity-medium: #C0772C;
-  --severity-high: #A8423F;
+  /* Light Theme: Eucalyptus Haze */
+  --bg-app: #EFF4F2;
+  --bg-secondary: #DDEBE5;
+  --surface-highlight: #A5C9BC;
+  --primary-teal: #34796E;
+  --primary-accent: #34796E;
+  --secondary-accent: #34796E;
+  --text-primary: #203A37;
+  --text-secondary: #648078;
+  --text-on-accent: #EFF4F2;
+
+  /* Liquid Glass Surfaces: 18-24px blur, fine highlights */
+  --surface-glass: rgba(221, 235, 229, 0.72);
+  --surface-glass-elevated: rgba(239, 244, 242, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.75);
+  --glass-border-subtle: rgba(165, 201, 188, 0.35);
+  --glass-shadow: 0 10px 28px -4px rgba(52, 121, 110, 0.08), 0 4px 10px -2px rgba(52, 121, 110, 0.04);
+  --glass-shadow-elevated: 0 16px 36px -6px rgba(52, 121, 110, 0.12), 0 6px 14px -3px rgba(52, 121, 110, 0.06);
+
+  /* Status Colors */
+  --status-good: #34796E;
+  --status-marginal: #C0772C;
+  --status-poor: #A8423F;
+}
+
+html.dark {
+  /* Dark Theme: Midnight Sylva */
+  --bg-app: #101B19;
+  --bg-secondary: #172724;
+  --surface-highlight: #9AD5C1;
+  --primary-teal: #9AD5C1;
+  --primary-accent: #9AD5C1;
+  --secondary-accent: #70B9A3;
+  --text-primary: #E6F0EB;
+  --text-secondary: #A0B8AD;
+  --text-on-accent: #142823;
+
+  /* Liquid Glass Surfaces: translucent #213632 and #2A413B */
+  --surface-glass: rgba(33, 54, 50, 0.76);
+  --surface-glass-elevated: rgba(42, 65, 59, 0.88);
+  --glass-border: rgba(181, 215, 200, 0.22);
+  --glass-border-subtle: rgba(181, 215, 200, 0.15);
+  --glass-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.55), 0 4px 12px -2px rgba(0, 0, 0, 0.35);
+  --glass-shadow-elevated: 0 20px 42px -6px rgba(0, 0, 0, 0.7), 0 8px 18px -4px rgba(0, 0, 0, 0.45);
+
+  /* Status Colors with accessible contrast on dark glass */
+  --status-good: #9AD5C1;
+  --status-marginal: #E29C52;
+  --status-poor: #E26E68;
 }
 
 @theme {
   --font-sans: "Plus Jakarta Sans", "Noto Sans Telugu", "Noto Sans Kannada", "Noto Sans Devanagari", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --color-mist-white: var(--mist-white);
-  --color-eucalyptus-mist: var(--eucalyptus-mist);
-  --color-pale-sage: var(--pale-sage);
-  --color-eucalyptus-teal: var(--eucalyptus-teal);
-  --color-deep-botanical: var(--deep-botanical);
-  --color-muted-sage: var(--muted-sage);
-  --color-severity-medium: var(--severity-medium);
-  --color-severity-high: var(--severity-high);
+  --color-bg-app: var(--bg-app);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-surface-glass: var(--surface-glass);
+  --color-surface-glass-elevated: var(--surface-glass-elevated);
+  --color-surface-highlight: var(--surface-highlight);
+  --color-primary-teal: var(--primary-teal);
+  --color-primary-accent: var(--primary-accent);
+  --color-secondary-accent: var(--secondary-accent);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-on-accent: var(--text-on-accent);
+  --color-glass-border: var(--glass-border);
+  --color-status-good: var(--status-good);
+  --color-status-marginal: var(--status-marginal);
+  --color-status-poor: var(--status-poor);
 }
 
 body {
-  font-family: "Plus Jakarta Sans", "Noto Sans Telugu", "Noto Sans Kannada", "Noto Sans Devanagari", system-ui, -apple-system, sans-serif;
-  background-color: var(--mist-white);
-  color: var(--deep-botanical);
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
   min-height: 100vh;
   margin: 0;
   overflow-x: hidden;
+  transition: background-color 250ms cubic-bezier(0.16, 1, 0.3, 1), color 250ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 200–300ms smooth theme color transitions */
+div, header, aside, nav, main, button, input, select, textarea, p, span, h1, h2, h3, h4 {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+  transition-duration: 250ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body, div, header, aside, nav, main, button, input, select, textarea, p, span, h1, h2, h3, h4 {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
 .tabular-nums {
@@ -37,22 +100,65 @@ body {
   font-feature-settings: "tnum";
 }
 
-/* Soft frosted glass card for Sylva */
+/* Liquid Glass Cards */
 .sylva-card {
-  background-color: rgba(221, 235, 229, 0.68);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  box-shadow: 0 10px 28px -4px rgba(52, 121, 110, 0.08), 0 4px 10px -2px rgba(52, 121, 110, 0.04);
+  background-color: var(--surface-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
   border-radius: 1.25rem;
 }
 
+.sylva-card-elevated {
+  background-color: var(--surface-glass-elevated);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-elevated);
+  border-radius: 1.5rem;
+}
+
 .sylva-card-interactive {
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, background-color 0.25s ease;
 }
 
 .sylva-card-interactive:hover {
-  box-shadow: 0 14px 32px -4px rgba(52, 121, 110, 0.12), 0 6px 14px -2px rgba(52, 121, 110, 0.06);
+  transform: translateY(-2px);
+  box-shadow: var(--glass-shadow-elevated);
+}
+
+/* Subtle idle pulse for Sylva FAB (soft botanical glow over ~4s) */
+@keyframes sylva-fab-breathe {
+  0%, 100% {
+    box-shadow: 0 4px 18px rgba(52, 121, 110, 0.25);
+  }
+  50% {
+    box-shadow: 0 10px 30px rgba(52, 121, 110, 0.45), 0 0 12px rgba(52, 121, 110, 0.3);
+  }
+}
+
+@keyframes sylva-fab-breathe-dark {
+  0%, 100% {
+    box-shadow: 0 4px 20px rgba(154, 213, 193, 0.25);
+  }
+  50% {
+    box-shadow: 0 10px 32px rgba(154, 213, 193, 0.5), 0 0 16px rgba(154, 213, 193, 0.35);
+  }
+}
+
+.sylva-fab-pulse {
+  animation: sylva-fab-breathe 4s ease-in-out infinite;
+}
+
+html.dark .sylva-fab-pulse {
+  animation: sylva-fab-breathe-dark 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sylva-fab-pulse {
+    animation: none !important;
+  }
 }
 
 @keyframes sylva-drift-glow {
@@ -88,9 +194,10 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--pale-sage);
+  background: var(--surface-highlight);
   border-radius: 9999px;
+  opacity: 0.6;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-sage);
+  background: var(--text-secondary);
 }

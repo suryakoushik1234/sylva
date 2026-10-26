@@ -11,17 +11,17 @@ export const LanguageSelector: React.FC<{ compact?: boolean }> = ({ compact = fa
       <label htmlFor="sylva-language-select" className="sr-only">
         Language
       </label>
-      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/70 bg-[#DDEBE5]/70 backdrop-blur-md shadow-xs text-[#203A37] text-sm font-medium transition-colors hover:border-[#34796E]/40 focus-within:ring-2 focus-within:ring-[#34796E]/30">
-        <Globe className="w-3.5 h-3.5 text-[#34796E] shrink-0" aria-hidden="true" />
+      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] backdrop-blur-md shadow-2xs text-[var(--text-primary)] text-xs sm:text-sm font-medium transition-colors hover:border-[var(--primary-accent)]/40 focus-within:ring-2 focus-within:ring-[var(--primary-accent)]/30">
+        <Globe className="w-3.5 h-3.5 text-[var(--primary-accent)] shrink-0" aria-hidden="true" />
         <select
           id="sylva-language-select"
           value={language}
           onChange={(e) => setLanguage(e.target.value as SupportedLanguage)}
-          className="bg-transparent text-[#203A37] text-sm font-medium focus:outline-none cursor-pointer pr-1"
+          className="bg-transparent text-[var(--text-primary)] text-xs sm:text-sm font-medium focus:outline-none cursor-pointer pr-1"
           aria-label="Language selection"
         >
           {LANGUAGES.map((lang) => (
-            <option key={lang.code} value={lang.code} className="bg-[#EFF4F2] text-[#203A37]">
+            <option key={lang.code} value={lang.code} className="bg-[var(--bg-app)] text-[var(--text-primary)]">
               {compact ? lang.nativeName : `${lang.name} (${lang.nativeName})`}
             </option>
           ))}

@@ -54,10 +54,21 @@ export interface SprayWindowHour {
   inBestWindow?: boolean;
 }
 
+export interface DailyForecastPoint {
+  date: string;
+  dayLabel: string;
+  tempMax: number;
+  tempMin: number;
+  rainProbMax: number;
+  weatherCode: number;
+  condition: string;
+}
+
 export interface EvaluatedSprayWindow {
   title: string;
   subtitle: string;
   status: 'optimal' | 'moderate' | 'poor';
+  plainVerdict: string;
   bestWindowTime: string;
   bestWindowReason: string;
   isFallbackLeastBad?: boolean;
@@ -66,7 +77,9 @@ export interface EvaluatedSprayWindow {
   currentTemp: number;
   currentWind: number;
   currentRainRisk: SeverityLevel;
+  currentHumidity?: number;
   locationName: string;
+  dailyForecast?: DailyForecastPoint[];
 }
 
 export interface ScanHistoryItem {
@@ -98,6 +111,9 @@ export type LeafMood = 'calm' | 'windy';
 export interface AppContextType {
   language: SupportedLanguage;
   setLanguage: (lang: SupportedLanguage) => void;
+  theme: 'light' | 'dark';
+  setTheme: (theme: 'light' | 'dark') => void;
+  toggleTheme: () => void;
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
   tabDirection: number; // 1 for right/down, -1 for left/up
@@ -119,5 +135,7 @@ export interface AppContextType {
   returnToLanding: () => void;
   isChatOpen: boolean;
   setIsChatOpen: (open: boolean) => void;
+  pendingChatPrompt: string | null;
+  setPendingChatPrompt: (prompt: string | null) => void;
   openChatWithPrompt: (prompt?: string) => void;
 }

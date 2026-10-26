@@ -192,35 +192,35 @@ export const LivingBackground: React.FC<LivingBackgroundProps> = ({
       aria-hidden="true"
       className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none"
     >
-      {/* 1. Base Gradient Mist White to Eucalyptus Mist */}
+      {/* 1. Base Gradient matching active theme */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 transition-colors duration-300"
         style={{
-          background: 'linear-gradient(175deg, #EFF4F2 0%, #E6F0EB 48%, #DDEBE5 100%)',
+          background: 'linear-gradient(175deg, var(--bg-app) 0%, var(--bg-secondary) 100%)',
         }}
       />
 
-      {/* 2. Slow-drifting Pale Sage Glows (startup page only) */}
+      {/* 2. Slow-drifting Botanical Glows (startup page only) */}
       {!prefersReducedMotion && showNatureElements && (
         <>
           <div
-            className="absolute -top-[10%] -left-[10%] w-[55vw] h-[55vw] max-w-[650px] max-h-[650px] rounded-full opacity-40 mix-blend-multiply blur-[80px]"
+            className="absolute -top-[10%] -left-[10%] w-[55vw] h-[55vw] max-w-[650px] max-h-[650px] rounded-full opacity-30 blur-[80px]"
             style={{
-              background: 'radial-gradient(circle, #A5C9BC 0%, rgba(165, 201, 188, 0) 70%)',
+              background: 'radial-gradient(circle, var(--surface-highlight) 0%, transparent 70%)',
               animation: 'sylva-drift-glow 24s ease-in-out infinite alternate',
             }}
           />
           <div
-            className="absolute top-[40%] -right-[15%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] rounded-full opacity-35 mix-blend-multiply blur-[90px]"
+            className="absolute top-[40%] -right-[15%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] rounded-full opacity-25 blur-[90px]"
             style={{
-              background: 'radial-gradient(circle, #B9DDD0 0%, rgba(185, 221, 208, 0) 70%)',
+              background: 'radial-gradient(circle, var(--primary-accent) 0%, transparent 70%)',
               animation: 'sylva-drift-glow-reverse 28s ease-in-out infinite alternate',
             }}
           />
           <div
-            className="absolute -bottom-[10%] left-[20%] w-[45vw] h-[45vw] max-w-[500px] max-h-[500px] rounded-full opacity-30 mix-blend-multiply blur-[80px]"
+            className="absolute -bottom-[10%] left-[20%] w-[45vw] h-[45vw] max-w-[500px] max-h-[500px] rounded-full opacity-20 blur-[80px]"
             style={{
-              background: 'radial-gradient(circle, #A5C9BC 0%, rgba(165, 201, 188, 0) 70%)',
+              background: 'radial-gradient(circle, var(--surface-highlight) 0%, transparent 70%)',
               animation: 'sylva-drift-glow 32s ease-in-out infinite alternate-reverse',
             }}
           />

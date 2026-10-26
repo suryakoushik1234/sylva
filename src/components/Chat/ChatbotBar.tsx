@@ -4,14 +4,15 @@ import {
   Mic,
   MicOff,
   Send,
-  ChevronDown,
+  X,
   Sparkles,
   Bot,
   User,
   RotateCcw,
+  Tag,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { BOUNCY_SPRING } from '../../theme';
+import { ASSISTANT_SPRING } from '../../theme';
 import { ChatMessage } from '../../types';
 
 export const ChatbotBar: React.FC = () => {
@@ -19,9 +20,12 @@ export const ChatbotBar: React.FC = () => {
     language,
     activeTab,
     latestDiagnosis,
+    setLatestDiagnosis,
     evaluatedSprayWindow,
     isChatOpen,
     setIsChatOpen,
+    pendingChatPrompt,
+    setPendingChatPrompt,
   } = useApp();
 
   const [inputMessage, setInputMessage] = useState<string>('');
@@ -30,7 +34,7 @@ export const ChatbotBar: React.FC = () => {
       id: 'welcome',
       role: 'assistant',
       content:
-        'Hello! I am Sylva, your agricultural agronomist and crop pathologist. Ask me any question about crop health, treatment plans, IPM recovery steps, or spray weather.',
+        'Hello! I am Sylva, your agricultural agronomist and crop pathologist. Ask me any question about crop symptoms, IPM treatment plans, organic remedies, or optimal spraying weather.',
       timestamp: Date.now(),
     },
   ]);
@@ -38,9 +42,38 @@ export const ChatbotBar: React.FC = () => {
   const [isListening, setIsListening] = useState<boolean>(false);
   const [speechError, setSpeechError] = useState<string | null>(null);
 
+  // First-time visit "Ask Sylva" pill hint (auto-dismiss after 4 seconds or on click)
+  const [showHint, setShowHint] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return !localStorage.getItem('sylva_chat_hint_dismissed_v1');
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  });
+
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const recognitionRef = useRef<any>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Auto-dismiss hint after 4s
+  useEffect(() => {
+    if (showHint) {
+      const timer = setTimeout(() => {
+        dismissHint();
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [showHint]);
+
+  const dismissHint = () => {
+    setShowHint(false);
+    try {
+      localStorage.setItem('sylva_chat_hint_dismissed_v1', 'true');
+    } catch {}
+  };
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -60,6 +93,15 @@ export const ChatbotBar: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isChatOpen, setIsChatOpen]);
 
+  // Handle external pending prompt (e.g. from diagnosis card "Ask Sylva about this")
+  useEffect(() => {
+    if (pendingChatPrompt && isChatOpen) {
+      const prompt = pendingChatPrompt;
+      setPendingChatPrompt(null);
+      handleSendMessage(prompt);
+    }
+  }, [pendingChatPrompt, isChatOpen]);
+
   // Setup Web Speech API Recognition for voice STT (typing assistance only, NO TTS)
   useEffect(() => {
     const SpeechRecognition =
@@ -70,7 +112,6 @@ export const ChatbotBar: React.FC = () => {
       recognition.continuous = false;
       recognition.interimResults = true;
 
-      // Set language code based on current language
       const langCodes: Record<string, string> = {
         en: 'en-IN',
         hi: 'hi-IN',
@@ -94,7 +135,7 @@ export const ChatbotBar: React.FC = () => {
       recognition.onerror = (event: any) => {
         if (event.error !== 'no-speech') {
           console.warn('Speech recognition error:', event.error);
-          setSpeechError(`Voice input: ${event.error}`);
+          setSpeechError(`Voice: ${event.error}`);
         }
         setIsListening(false);
       };
@@ -123,7 +164,7 @@ export const ChatbotBar: React.FC = () => {
       setIsListening(false);
     } else {
       if (!recognitionRef.current) {
-        setSpeechError('Speech recognition is not supported in this browser.');
+        setSpeechError('Microphone speech recognition is not supported in this browser.');
         return;
       }
       try {
@@ -157,7 +198,6 @@ export const ChatbotBar: React.FC = () => {
     setIsSending(true);
 
     try {
-      // Build context for real Gemini AI model
       const contextPayload: any = {
         activeTab,
       };
@@ -213,7 +253,6 @@ export const ChatbotBar: React.FC = () => {
         throw new Error('Chat service unavailable');
       }
     } catch {
-      // Fallback response if offline or server is temporarily unreachable
       const fallbackReply = latestDiagnosis
         ? `For ${latestDiagnosis.cropName} showing ${latestDiagnosis.conditionName}, prioritize cultural sanitation: safely prune diseased leaves away from the plot. Always check the chemical label and verify with your local agricultural officer / Krishi Vigyan Kendra (KVK).`
         : 'To evaluate your crop, capture or upload a leaf photo in the Scan tab, and I will identify the pathogen and prescribe an IPM treatment schedule.';
@@ -239,79 +278,114 @@ export const ChatbotBar: React.FC = () => {
 
   const quickPrompts = [
     latestDiagnosis
-      ? `How to treat ${latestDiagnosis.conditionName}?`
-      : 'What diseases affect Paddy (धान) and Cotton (कपास) right now?',
+      ? `Why this treatment for ${latestDiagnosis.cropName}?`
+      : 'What foliar diseases are common right now?',
     evaluatedSprayWindow
-      ? `Is it safe to spray during ${evaluatedSprayWindow.bestWindowTime}?`
+      ? `When should I spray in ${evaluatedSprayWindow.locationName}?`
       : 'What is the optimal spray window for foliar fungicides?',
-    'What organic IPM remedies work best for leaf curl and blight?',
+    'Can I use neem oil or bio-fungicide safely?',
   ];
 
   return (
     <>
-      {/* Backdrop to close chat when clicking outside */}
-      {isChatOpen && (
-        <div
-          onClick={() => setIsChatOpen(false)}
-          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px] transition-opacity"
-          aria-label="Close Chat Backdrop"
-        />
-      )}
+      {/* Backdrop scrim to close chat when clicking outside */}
+      <AnimatePresence>
+        {isChatOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setIsChatOpen(false)}
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity cursor-pointer"
+            aria-label="Close assistant backdrop"
+          />
+        )}
+      </AnimatePresence>
 
-      <div className="fixed bottom-20 md:bottom-4 left-0 right-0 z-40 pointer-events-none flex flex-col items-center px-3 sm:px-6">
-        {/* Expanded Chat Drawer */}
+      {/* Floating Container: Anchored bottom-right */}
+      <div
+        className="fixed z-50 pointer-events-none flex flex-col items-end right-4 sm:right-6"
+        style={{
+          bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
+        }}
+      >
+        {/* Expanded Assistant Panel */}
         <AnimatePresence>
           {isChatOpen && (
             <motion.div
-              initial={{ opacity: 0, y: 30, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 30, scale: 0.98 }}
-              transition={BOUNCY_SPRING}
-              className="pointer-events-auto w-full max-w-2xl mb-3 rounded-3xl border border-white/90 bg-[#EFF4F2]/98 backdrop-blur-xl shadow-2xl flex flex-col overflow-hidden max-h-[72vh] sm:max-h-[64vh]"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={ASSISTANT_SPRING}
+              className="pointer-events-auto fixed sm:absolute inset-x-2 bottom-0 sm:bottom-16 sm:right-0 sm:left-auto w-auto sm:w-[380px] max-h-[85vh] sm:max-h-[70vh] rounded-t-[28px] sm:rounded-[28px] border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] backdrop-blur-[24px] shadow-[var(--glass-shadow-elevated)] flex flex-col overflow-hidden mb-2 z-50"
             >
-              {/* Drawer Header with Prominent Close Down-Arrow */}
-              <div className="p-4 px-5 border-b border-[#A5C9BC]/35 flex items-center justify-between bg-[#DDEBE5]/85">
+              {/* Header */}
+              <div className="p-4 px-5 border-b border-[var(--glass-border-subtle)] flex items-center justify-between bg-[var(--surface-glass)]">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#34796E] text-[#EFF4F2] flex items-center justify-center shadow-xs">
+                  <div className="w-8 h-8 rounded-xl bg-[var(--primary-accent)] text-[var(--text-on-accent)] flex items-center justify-center shadow-xs">
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-[#203A37] flex items-center gap-2">
-                      <span>Sylva Agronomist AI</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-[var(--text-primary)]">
+                        Sylva
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[var(--status-good)]/15 text-[var(--status-good)] text-[10px] font-semibold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--status-good)] animate-pulse" />
+                        Ready
+                      </span>
                     </div>
-                    <div className="text-[11px] text-[#648078] truncate max-w-xs">
-                      {latestDiagnosis
-                        ? `Context: ${latestDiagnosis.cropName} • ${latestDiagnosis.conditionName}`
-                        : 'Expert agronomist guidance & IPM action plans'}
+                    <div className="text-[11px] text-[var(--text-secondary)]">
+                      Agronomist AI · Field Pathologist
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  {/* Clear chat */}
+                <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => setMessages([messages[0]])}
-                    className="p-1.5 rounded-lg border border-white/80 bg-white/70 text-[#648078] hover:text-[#203A37] cursor-pointer transition-colors"
+                    className="p-1.5 rounded-lg border border-[var(--glass-border)] bg-[var(--surface-glass)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-colors"
                     title="Reset conversation"
+                    aria-label="Reset conversation"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                   </button>
-
-                  {/* PROMINENT CLOSE / MINIMIZE DOWN ARROW BUTTON */}
                   <button
                     onClick={() => setIsChatOpen(false)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#34796E]/30 bg-white hover:bg-[#EFF4F2] text-[#203A37] text-xs font-bold cursor-pointer transition-all shadow-xs"
-                    title="Close and minimize chatbar"
-                    aria-label="Close and minimize chatbar"
+                    className="p-1.5 rounded-lg border border-[var(--glass-border)] bg-[var(--surface-glass)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-colors"
+                    title="Close assistant"
+                    aria-label="Close assistant"
                   >
-                    <ChevronDown className="w-4 h-4 text-[#34796E]" />
-                    <span>Close</span>
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
+              {/* Active Diagnosis Context Indicator Pill */}
+              {latestDiagnosis && (
+                <div className="px-4 py-2 border-b border-[var(--glass-border-subtle)] bg-[var(--surface-glass)]/60 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Tag className="w-3 h-3 text-[var(--primary-accent)] shrink-0" />
+                    <span className="text-[11px] font-medium text-[var(--text-secondary)] truncate">
+                      Context:{' '}
+                      <strong className="text-[var(--text-primary)] font-semibold">
+                        {latestDiagnosis.cropName} · {latestDiagnosis.conditionName}
+                      </strong>
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setLatestDiagnosis(null)}
+                    className="text-[10px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] underline shrink-0 cursor-pointer"
+                    title="Clear crop context"
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
+
               {/* Message History */}
-              <div className="flex-1 p-4 overflow-y-auto space-y-3 min-h-[190px]">
+              <div className="flex-1 p-4 overflow-y-auto space-y-3 min-h-[220px]">
                 {messages.map((m) => {
                   const isAssistant = m.role === 'assistant';
                   return (
@@ -320,23 +394,23 @@ export const ChatbotBar: React.FC = () => {
                       className={`flex items-start gap-2.5 ${isAssistant ? 'justify-start' : 'justify-end'}`}
                     >
                       {isAssistant && (
-                        <div className="w-6 h-6 rounded-lg bg-[#34796E]/12 text-[#34796E] flex items-center justify-center shrink-0 mt-1">
+                        <div className="w-6 h-6 rounded-lg bg-[var(--primary-accent)]/15 text-[var(--primary-accent)] flex items-center justify-center shrink-0 mt-0.5">
                           <Bot className="w-3.5 h-3.5" />
                         </div>
                       )}
 
                       <div
-                        className={`max-w-[85%] rounded-2xl p-3 text-xs sm:text-sm leading-relaxed shadow-2xs ${
+                        className={`max-w-[85%] rounded-2xl p-3 text-xs sm:text-sm leading-relaxed shadow-xs ${
                           isAssistant
-                            ? 'bg-white border border-white/80 text-[#203A37]'
-                            : 'bg-[#34796E] text-[#EFF4F2]'
+                            ? 'bg-[var(--surface-glass)] border border-[var(--glass-border)] text-[var(--text-primary)]'
+                            : 'bg-[var(--primary-accent)] text-[var(--text-on-accent)] font-medium'
                         }`}
                       >
                         <p className="whitespace-pre-wrap">{m.content}</p>
                       </div>
 
                       {!isAssistant && (
-                        <div className="w-6 h-6 rounded-lg bg-[#203A37]/10 text-[#203A37] flex items-center justify-center shrink-0 mt-1">
+                        <div className="w-6 h-6 rounded-lg bg-[var(--surface-highlight)]/30 text-[var(--text-primary)] flex items-center justify-center shrink-0 mt-0.5">
                           <User className="w-3.5 h-3.5" />
                         </div>
                       )}
@@ -345,161 +419,144 @@ export const ChatbotBar: React.FC = () => {
                 })}
 
                 {isSending && (
-                  <div className="flex items-center gap-2 text-xs text-[#648078] p-2">
-                    <Bot className="w-4 h-4 text-[#34796E] animate-pulse" />
-                    <span>Sylva is analyzing agronomic guidelines...</span>
+                  <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)] p-2">
+                    <Bot className="w-4 h-4 text-[var(--primary-accent)] animate-pulse" />
+                    <span>Sylva is formulating agronomist advice...</span>
                   </div>
                 )}
 
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Contextual Quick Suggestions */}
-              <div className="px-4 py-2 border-t border-[#A5C9BC]/25 flex items-center gap-1.5 overflow-x-auto bg-[#EFF4F2]/50 no-scrollbar">
-                <span className="text-[10px] font-bold text-[#648078] uppercase shrink-0">
-                  Suggested:
-                </span>
+              {/* Contextual Suggestion Chips */}
+              <div className="px-3.5 py-2 border-t border-[var(--glass-border-subtle)] flex items-center gap-1.5 overflow-x-auto bg-[var(--surface-glass)]/40 no-scrollbar">
                 {quickPrompts.map((q, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleSendMessage(q)}
-                    className="px-2.5 py-1 rounded-full bg-white border border-white/80 text-[11px] text-[#203A37] hover:border-[#34796E]/50 shrink-0 cursor-pointer shadow-2xs transition-all"
+                    className="px-2.5 py-1 rounded-full bg-[var(--surface-glass)] border border-[var(--glass-border)] text-[11px] text-[var(--text-primary)] hover:border-[var(--primary-accent)] shrink-0 cursor-pointer shadow-2xs transition-all whitespace-nowrap"
                   >
                     {q}
                   </button>
                 ))}
               </div>
 
-              {/* Dedicated minimize strip right above bottom bar */}
-              <button
-                onClick={() => setIsChatOpen(false)}
-                className="w-full py-1.5 bg-[#DDEBE5]/50 hover:bg-[#DDEBE5] text-[11px] font-semibold text-[#648078] hover:text-[#203A37] flex items-center justify-center gap-1 border-t border-[#A5C9BC]/20 cursor-pointer transition-colors"
-                title="Minimize chatbar"
-              >
-                <ChevronDown className="w-3.5 h-3.5" />
-                <span>Minimize chat window</span>
-              </button>
+              {/* Input Bar */}
+              <div className="p-3 border-t border-[var(--glass-border)] bg-[var(--surface-glass)] flex items-center gap-2">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={
+                    isListening
+                      ? 'Listening to speech...'
+                      : latestDiagnosis
+                      ? `Ask about ${latestDiagnosis.cropName}...`
+                      : 'Ask about crop care, treatments, or spray...'
+                  }
+                  className="flex-1 px-3 py-2 text-xs sm:text-sm bg-transparent border-0 focus:outline-none text-[var(--text-primary)] placeholder-[var(--text-secondary)] min-w-0"
+                />
+
+                {/* Voice Speech-to-Text Button */}
+                <button
+                  onClick={toggleListening}
+                  className={`p-2 rounded-xl border flex items-center justify-center cursor-pointer transition-colors shrink-0 shadow-2xs ${
+                    isListening
+                      ? 'bg-[var(--status-poor)] text-white border-transparent animate-pulse'
+                      : 'bg-[var(--surface-glass-elevated)] text-[var(--primary-accent)] border-[var(--glass-border)] hover:bg-[var(--surface-glass)]'
+                  }`}
+                  title={isListening ? 'Stop voice input' : 'Speak your question'}
+                  aria-label="Voice speech to text"
+                >
+                  {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                </button>
+
+                {/* Send Button */}
+                <button
+                  onClick={() => handleSendMessage()}
+                  disabled={!inputMessage.trim() || isSending}
+                  className={`p-2 rounded-xl cursor-pointer transition-all shrink-0 shadow-xs flex items-center justify-center ${
+                    inputMessage.trim() && !isSending
+                      ? 'bg-[var(--primary-accent)] text-[var(--text-on-accent)] hover:opacity-90'
+                      : 'bg-[var(--glass-border-subtle)] text-[var(--text-secondary)] opacity-50 cursor-not-allowed'
+                  }`}
+                  title="Send message"
+                  aria-label="Send message"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+
+              {speechError && (
+                <div className="text-[10px] text-[var(--status-poor)] text-center py-1 bg-[var(--surface-glass)]">
+                  {speechError}
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* FLOATING BOTTOM BAR */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={BOUNCY_SPRING}
-          className="pointer-events-auto w-full max-w-2xl"
-        >
-          <div
-            className={`relative rounded-2xl sm:rounded-3xl border border-white/90 bg-[#EFF4F2]/95 backdrop-blur-xl shadow-xl p-2 sm:p-2.5 transition-all duration-200 flex items-center gap-2 ${
-              isListening ? 'ring-2 ring-[#34796E] bg-[#DDEBE5]/95' : ''
-            }`}
-          >
-            {/* Sylva Avatar & Expand/Collapse Trigger */}
-            <button
-              onClick={() => setIsChatOpen(!isChatOpen)}
-              className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-white/60 transition-colors cursor-pointer shrink-0"
-              title={isChatOpen ? 'Minimize chat' : 'Open agronomist chat'}
-            >
-              <div className="relative w-8 h-8 rounded-xl bg-[#34796E] text-white flex items-center justify-center shadow-xs">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-bold text-[#203A37] hidden sm:inline">
-                Sylva
-              </span>
-              {isChatOpen ? (
-                <ChevronDown className="w-4 h-4 text-[#34796E]" />
-              ) : null}
-            </button>
-
-            {/* Input box */}
-            <div className="flex-1 relative flex items-center min-w-0">
-              <input
-                ref={inputRef}
-                type="text"
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onFocus={() => {
-                  if (!isChatOpen) setIsChatOpen(true);
+        {/* FAB (Collapsed Floating Action Button) */}
+        <div className="pointer-events-auto relative flex items-center gap-2">
+          {/* First-time "Ask Sylva" dismissible hint pill */}
+          <AnimatePresence>
+            {showHint && !isChatOpen && (
+              <motion.div
+                initial={{ opacity: 0, x: 10, scale: 0.9 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 10, scale: 0.9 }}
+                transition={ASSISTANT_SPRING}
+                onClick={() => {
+                  dismissHint();
+                  setIsChatOpen(true);
                 }}
-                placeholder={
-                  isListening
-                    ? 'Listening to speech...'
-                    : latestDiagnosis
-                    ? `Ask about ${latestDiagnosis.cropName} treatment or spray...`
-                    : 'Ask about crop care, disease diagnosis, or spray timing...'
-                }
-                className="w-full px-3 py-2 text-xs sm:text-sm bg-transparent border-0 focus:outline-none text-[#203A37] placeholder-[#648078] truncate"
-              />
-
-              {isListening && (
-                <span className="absolute right-2 flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34796E] opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#34796E]" />
-                </span>
-              )}
-            </div>
-
-            {/* Action buttons: Voice STT Dictate, Close down-arrow if open, Send */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              {/* Voice Speech-to-Text Dictation Button */}
-              <motion.button
-                onClick={toggleListening}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.94 }}
-                className={`p-2 sm:px-3 rounded-xl border flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs ${
-                  isListening
-                    ? 'bg-[#34796E] text-white border-[#34796E]'
-                    : 'bg-white/80 text-[#34796E] border-white/90 hover:bg-white'
-                }`}
-                title={isListening ? 'Stop voice input' : 'Dictate question with microphone'}
+                className="cursor-pointer px-3 py-1.5 rounded-full border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] backdrop-blur-md shadow-md text-xs font-bold text-[var(--text-primary)] flex items-center gap-1.5 hover:scale-105 transition-transform"
               >
-                {isListening ? <MicOff className="w-4 h-4 animate-pulse" /> : <Mic className="w-4 h-4" />}
-                <span className="text-xs font-semibold hidden md:inline">
-                  {isListening ? 'Stop' : 'Voice'}
-                </span>
-              </motion.button>
-
-              {/* Down arrow button to close if chat is open */}
-              {isChatOpen && (
-                <motion.button
-                  onClick={() => setIsChatOpen(false)}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.94 }}
-                  className="p-2 sm:px-2.5 rounded-xl border border-white/90 bg-white hover:bg-[#DDEBE5] text-[#203A37] flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
-                  title="Close chatbar"
-                  aria-label="Close chatbar"
+                <Sparkles className="w-3.5 h-3.5 text-[var(--primary-accent)]" />
+                <span>Ask Sylva</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    dismissHint();
+                  }}
+                  className="p-0.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 >
-                  <ChevronDown className="w-4 h-4 text-[#34796E]" />
-                  <span className="text-xs font-semibold hidden sm:inline">Close</span>
-                </motion.button>
+                  <X className="w-3 h-3" />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* 56×56px Action Button with Liquid Glass Highlight & Breathing Glow */}
+          <div className="relative w-14 h-14">
+            {!isChatOpen && (
+              <span
+                aria-hidden="true"
+                className="absolute inset-0 rounded-2xl sm:rounded-3xl sylva-fab-pulse pointer-events-none -z-10"
+              />
+            )}
+            <motion.button
+              onClick={() => {
+                if (showHint) dismissHint();
+                setIsChatOpen(!isChatOpen);
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.94 }}
+              className="w-14 h-14 rounded-2xl sm:rounded-3xl border border-[var(--glass-border)] bg-[var(--primary-accent)] text-[var(--text-on-accent)] shadow-[var(--glass-shadow-elevated)] flex items-center justify-center cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-accent)]"
+              title={isChatOpen ? 'Close Sylva assistant' : 'Ask Sylva Agronomist AI'}
+              aria-label="Toggle Sylva Assistant"
+              aria-expanded={isChatOpen}
+            >
+              {isChatOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Sparkles className="w-6 h-6" />
               )}
-
-              {/* Send Button */}
-              <motion.button
-                onClick={() => handleSendMessage()}
-                disabled={!inputMessage.trim() || isSending}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.94 }}
-                className={`p-2 sm:p-2.5 rounded-xl cursor-pointer transition-all shadow-xs ${
-                  inputMessage.trim() && !isSending
-                    ? 'bg-[#34796E] text-white hover:bg-[#2c655c]'
-                    : 'bg-white/50 text-[#648078]/40 border border-white/60 cursor-not-allowed'
-                }`}
-                title="Send message"
-              >
-                <Send className="w-4 h-4" />
-              </motion.button>
-            </div>
+            </motion.button>
           </div>
-
-          {speechError && (
-            <div className="text-[11px] text-[#A8423F] font-medium text-center pt-1">
-              {speechError}
-            </div>
-          )}
-        </motion.div>
+        </div>
       </div>
     </>
   );

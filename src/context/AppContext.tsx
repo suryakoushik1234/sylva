@@ -119,7 +119,60 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return stepTicks[scanId] || {};
   };
 
-  const openChatWithPrompt = (_prompt?: string) => {
+  const [theme, setThemeState] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sylva_theme_v1');
+      if (saved === 'light' || saved === 'dark') return saved;
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+      }
+    }
+    return 'light';
+  });
+
+  const [pendingChatPrompt, setPendingChatPrompt] = useState<string | null>(null);
+
+  // Sync theme class to documentElement
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  }, [theme]);
+
+  // Listen to OS theme changes if user hasn't explicitly set preference
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      const saved = localStorage.getItem('sylva_theme_v1');
+      if (!saved) {
+        setThemeState(e.matches ? 'dark' : 'light');
+      }
+    };
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  const setTheme = (newTheme: 'light' | 'dark') => {
+    setThemeState(newTheme);
+    try {
+      localStorage.setItem('sylva_theme_v1', newTheme);
+    } catch {}
+  };
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+  };
+
+  const openChatWithPrompt = (prompt?: string) => {
+    if (prompt) {
+      setPendingChatPrompt(prompt);
+    }
     setIsChatOpen(true);
   };
 
@@ -133,6 +186,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       value={{
         language,
         setLanguage,
+        theme,
+        setTheme,
+        toggleTheme,
         activeTab,
         setActiveTab,
         tabDirection,
@@ -154,6 +210,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         returnToLanding,
         isChatOpen,
         setIsChatOpen,
+        pendingChatPrompt,
+        setPendingChatPrompt,
         openChatWithPrompt,
       }}
     >

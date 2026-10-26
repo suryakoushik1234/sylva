@@ -1,18 +1,32 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Camera, Search, Stethoscope, ArrowRight } from 'lucide-react';
+import { Camera, Search, Stethoscope, ArrowRight, Sun, Moon } from 'lucide-react';
 import { Logo } from '../Logo';
 import { BOUNCY_SPRING } from '../../theme';
 import { useApp } from '../../context/AppContext';
 
 export const LandingPage: React.FC = () => {
-  const { enterApp } = useApp();
+  const { enterApp, theme, toggleTheme } = useApp();
 
   return (
     <main className="relative min-h-screen w-full flex flex-col justify-between px-4 sm:px-6 py-8 sm:py-12 max-w-4xl mx-auto z-10">
       {/* Top Header */}
       <header className="flex items-center justify-between">
         <Logo size="md" />
+
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className="p-2 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] text-[var(--text-primary)] hover:text-[var(--primary-accent)] cursor-pointer shadow-2xs transition-colors"
+          title={theme === 'dark' ? 'Switch to Eucalyptus Haze' : 'Switch to Midnight Sylva'}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {theme === 'dark' ? (
+            <Sun className="w-4 h-4 text-[#9AD5C1]" />
+          ) : (
+            <Moon className="w-4 h-4 text-[#34796E]" />
+          )}
+        </button>
       </header>
 
       {/* Hero Section */}
@@ -24,7 +38,7 @@ export const LandingPage: React.FC = () => {
           className="space-y-4 max-w-2xl"
         >
           <h1
-            className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-[#203A37] leading-[1.12]"
+            className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-[var(--text-primary)] leading-[1.12]"
             style={{ letterSpacing: '-0.03em' }}
           >
             Know your crop.
@@ -32,7 +46,7 @@ export const LandingPage: React.FC = () => {
             Save your harvest.
           </h1>
 
-          <p className="text-base sm:text-lg text-[#648078] max-w-xl mx-auto">
+          <p className="text-base sm:text-lg text-[var(--text-secondary)] max-w-xl mx-auto">
             Instant AI diagnostics and field-proven treatment plans to protect your crop yield.
           </p>
 
@@ -42,7 +56,7 @@ export const LandingPage: React.FC = () => {
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.96 }}
               transition={BOUNCY_SPRING}
-              className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-[#34796E] text-[#EFF4F2] font-semibold text-base shadow-[0_8px_24px_rgba(52,121,110,0.25)] hover:bg-[#2c655c] cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#34796E] focus-visible:ring-offset-2"
+              className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-[var(--primary-accent)] text-[var(--text-on-accent)] font-semibold text-base shadow-[var(--glass-shadow-elevated)] hover:opacity-90 cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-accent)]"
             >
               <span>Get started</span>
               <ArrowRight className="w-4 h-4" />
@@ -58,12 +72,12 @@ export const LandingPage: React.FC = () => {
             transition={{ ...BOUNCY_SPRING, delay: 0.12 }}
             className="text-center"
           >
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#203A37]">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-primary)]">
               What is Sylva?
             </h2>
           </motion.div>
 
-          {/* Three small cards: Snap, Identify, Treat */}
+          {/* Three cards: Snap, Identify, Treat */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 text-left">
             {/* Snap Card */}
             <motion.div
@@ -73,11 +87,11 @@ export const LandingPage: React.FC = () => {
               className="sylva-card p-6 flex flex-col justify-between"
             >
               <div className="space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-[#34796E]/12 border border-[#34796E]/20 flex items-center justify-center text-[#34796E]">
+                <div className="w-10 h-10 rounded-xl bg-[var(--primary-accent)]/15 border border-[var(--primary-accent)]/30 flex items-center justify-center text-[var(--primary-accent)]">
                   <Camera className="w-5 h-5" />
                 </div>
-                <h3 className="text-base font-semibold text-[#203A37]">Snap</h3>
-                <p className="text-sm text-[#648078] leading-relaxed">
+                <h3 className="text-base font-semibold text-[var(--text-primary)]">Snap</h3>
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                   Photograph an affected leaf in natural sunlight with your phone or camera.
                 </p>
               </div>
@@ -91,11 +105,11 @@ export const LandingPage: React.FC = () => {
               className="sylva-card p-6 flex flex-col justify-between"
             >
               <div className="space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-[#34796E]/12 border border-[#34796E]/20 flex items-center justify-center text-[#34796E]">
+                <div className="w-10 h-10 rounded-xl bg-[var(--primary-accent)]/15 border border-[var(--primary-accent)]/30 flex items-center justify-center text-[var(--primary-accent)]">
                   <Search className="w-5 h-5" />
                 </div>
-                <h3 className="text-base font-semibold text-[#203A37]">Identify</h3>
-                <p className="text-sm text-[#648078] leading-relaxed">
+                <h3 className="text-base font-semibold text-[var(--text-primary)]">Identify</h3>
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                   Find the disease or pest damaging your foliage in seconds.
                 </p>
               </div>
@@ -109,11 +123,11 @@ export const LandingPage: React.FC = () => {
               className="sylva-card p-6 flex flex-col justify-between"
             >
               <div className="space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-[#34796E]/12 border border-[#34796E]/20 flex items-center justify-center text-[#34796E]">
+                <div className="w-10 h-10 rounded-xl bg-[var(--primary-accent)]/15 border border-[var(--primary-accent)]/30 flex items-center justify-center text-[var(--primary-accent)]">
                   <Stethoscope className="w-5 h-5" />
                 </div>
-                <h3 className="text-base font-semibold text-[#203A37]">Treat</h3>
-                <p className="text-sm text-[#648078] leading-relaxed">
+                <h3 className="text-base font-semibold text-[var(--text-primary)]">Treat</h3>
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                   Get clear next steps with organic and targeted remedies.
                 </p>
               </div>
@@ -132,7 +146,7 @@ export const LandingPage: React.FC = () => {
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.96 }}
               transition={BOUNCY_SPRING}
-              className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-[#34796E] text-[#EFF4F2] font-semibold text-base shadow-[0_8px_24px_rgba(52,121,110,0.25)] hover:bg-[#2c655c] cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#34796E] focus-visible:ring-offset-2"
+              className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-[var(--primary-accent)] text-[var(--text-on-accent)] font-semibold text-base shadow-[var(--glass-shadow-elevated)] hover:opacity-90 cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-accent)]"
             >
               <span>Get started</span>
               <ArrowRight className="w-4 h-4" />
@@ -142,7 +156,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Clean footer */}
-      <footer className="text-center text-xs text-[#648078] py-4">
+      <footer className="text-center text-xs text-[var(--text-secondary)] py-4">
         Sylva Crop Diagnostic Engine
       </footer>
     </main>

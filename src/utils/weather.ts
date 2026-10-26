@@ -1,4 +1,10 @@
-import { EvaluatedSprayWindow, SeverityLevel, SprayWindowHour, WeatherCondition } from '../types';
+import {
+  DailyForecastPoint,
+  EvaluatedSprayWindow,
+  SeverityLevel,
+  SprayWindowHour,
+  WeatherCondition,
+} from '../types';
 
 /**
  * NAMED CONSTANTS FOR SPRAY WINDOW RULES
@@ -14,8 +20,28 @@ export const WINDOW_DURATION_HOURS = 3;
 export const DEFAULT_FALLBACK_LOCATION = {
   latitude: 18.5204,
   longitude: 73.8567,
-  name: 'Pune Region (Maharashtra Agri Belt)',
+  name: 'Pune, Maharashtra',
 };
+
+export const STORAGE_LOCATION_KEY = 'sylva_saved_location_v1';
+
+export function getStoredLocation(): { latitude: number; longitude: number; name: string } | null {
+  try {
+    if (typeof window !== 'undefined') {
+      const raw = localStorage.getItem(STORAGE_LOCATION_KEY);
+      if (raw) return JSON.parse(raw);
+    }
+  } catch {}
+  return null;
+}
+
+export function saveStoredLocation(loc: { latitude: number; longitude: number; name: string }): void {
+  try {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_LOCATION_KEY, JSON.stringify(loc));
+    }
+  } catch {}
+}
 
 export interface GeoLocationResult {
   id: number;
@@ -27,21 +53,21 @@ export interface GeoLocationResult {
 }
 
 export const INDIAN_AGRICULTURAL_HUBS = [
-  { name: 'Pune (Maharashtra)', detail: 'Sugarcane, Grapes, Pomegranate', latitude: 18.5204, longitude: 73.8567 },
-  { name: 'Nashik (Maharashtra)', detail: 'Onions, Grapes, Tomato', latitude: 19.9975, longitude: 73.7898 },
-  { name: 'Nagpur / Vidarbha (Maharashtra)', detail: 'Cotton, Oranges, Soybean', latitude: 21.1458, longitude: 79.0882 },
-  { name: 'Varanasi (Uttar Pradesh)', detail: 'Paddy Rice, Wheat, Veg', latitude: 25.3176, longitude: 82.9739 },
-  { name: 'Ludhiana (Punjab)', detail: 'Wheat, Paddy, Cotton', latitude: 30.9010, longitude: 75.8573 },
-  { name: 'Karnal (Haryana)', detail: 'Basmati Rice, Mustard, Wheat', latitude: 29.6857, longitude: 76.9905 },
-  { name: 'Guntur (Andhra Pradesh)', detail: 'Chilli, Cotton, Tobacco', latitude: 16.3067, longitude: 80.4365 },
-  { name: 'Warangal (Telangana)', detail: 'Cotton, Chilli, Turmeric', latitude: 17.9689, longitude: 79.5941 },
-  { name: 'Indore / Malwa (Madhya Pradesh)', detail: 'Soybean, Wheat, Garlic', latitude: 22.7196, longitude: 75.8577 },
-  { name: 'Rajkot (Gujarat)', detail: 'Groundnut, Cotton, Sesame', latitude: 22.3039, longitude: 70.8022 },
-  { name: 'Coimbatore (Tamil Nadu)', detail: 'Coconut, Cotton, Tea', latitude: 11.0168, longitude: 76.9558 },
-  { name: 'Mysuru / Mandya (Karnataka)', detail: 'Paddy, Sugarcane, Ragi', latitude: 12.2958, longitude: 76.6394 },
-  { name: 'Patna (Bihar)', detail: 'Maize, Rice, Pulses', latitude: 25.5941, longitude: 85.1376 },
-  { name: 'Jaipur / Alwar (Rajasthan)', detail: 'Mustard, Bajra, Guar', latitude: 26.9124, longitude: 75.7873 },
-  { name: 'Shimla (Himachal Pradesh)', detail: 'Apple, Pear, Stone Fruit', latitude: 31.1048, longitude: 77.1734 },
+  { name: 'Pune, Maharashtra', detail: 'Sugarcane, Grapes, Pomegranate', latitude: 18.5204, longitude: 73.8567 },
+  { name: 'Nashik, Maharashtra', detail: 'Onions, Grapes, Tomato', latitude: 19.9975, longitude: 73.7898 },
+  { name: 'Nagpur, Maharashtra', detail: 'Cotton, Oranges, Soybean', latitude: 21.1458, longitude: 79.0882 },
+  { name: 'Varanasi, Uttar Pradesh', detail: 'Paddy Rice, Wheat, Vegetables', latitude: 25.3176, longitude: 82.9739 },
+  { name: 'Ludhiana, Punjab', detail: 'Wheat, Paddy, Cotton', latitude: 30.9010, longitude: 75.8573 },
+  { name: 'Karnal, Haryana', detail: 'Basmati Rice, Mustard, Wheat', latitude: 29.6857, longitude: 76.9905 },
+  { name: 'Guntur, Andhra Pradesh', detail: 'Chilli, Cotton, Tobacco', latitude: 16.3067, longitude: 80.4365 },
+  { name: 'Warangal, Telangana', detail: 'Cotton, Chilli, Turmeric', latitude: 17.9689, longitude: 79.5941 },
+  { name: 'Indore, Madhya Pradesh', detail: 'Soybean, Wheat, Garlic', latitude: 22.7196, longitude: 75.8577 },
+  { name: 'Rajkot, Gujarat', detail: 'Groundnut, Cotton, Sesame', latitude: 22.3039, longitude: 70.8022 },
+  { name: 'Coimbatore, Tamil Nadu', detail: 'Coconut, Cotton, Tea', latitude: 11.0168, longitude: 76.9558 },
+  { name: 'Mysuru, Karnataka', detail: 'Paddy, Sugarcane, Ragi', latitude: 12.2958, longitude: 76.6394 },
+  { name: 'Patna, Bihar', detail: 'Maize, Rice, Pulses', latitude: 25.5941, longitude: 85.1376 },
+  { name: 'Jaipur, Rajasthan', detail: 'Mustard, Bajra, Guar', latitude: 26.9124, longitude: 75.7873 },
+  { name: 'Shimla, Himachal Pradesh', detail: 'Apple, Pear, Stone Fruit', latitude: 31.1048, longitude: 77.1734 },
   { name: 'New Delhi (NCR)', detail: 'Wheat, Mustard, Horticulture', latitude: 28.6139, longitude: 77.2090 },
 ];
 
@@ -69,14 +95,37 @@ export interface HourlyForecastPoint {
   windKmh: number;
 }
 
+export function formatRainProb(val: number): string {
+  const bounded = Math.max(0, Math.min(100, Math.round(val)));
+  if (bounded === 0) return 'No rain expected';
+  return `${bounded}%`;
+}
+
+export function getWeatherCodeLabel(code: number): string {
+  if (code === 0) return 'Clear Sky';
+  if (code === 1 || code === 2) return 'Partly Cloudy';
+  if (code === 3) return 'Overcast';
+  if (code >= 45 && code <= 48) return 'Foggy';
+  if (code >= 51 && code <= 55) return 'Drizzle';
+  if (code >= 61 && code <= 65) return 'Rain Showers';
+  if (code >= 71 && code <= 77) return 'Snow';
+  if (code >= 80 && code <= 82) return 'Rain Showers';
+  if (code >= 95) return 'Thunderstorm';
+  return 'Partly Cloudy';
+}
+
 /**
- * Fetch 48-hour hourly forecast from Open-Meteo
+ * Fetch hourly forecast and daily 3-day forecast from Open-Meteo
  */
 export async function fetchHourlyForecast(
   lat: number = DEFAULT_FALLBACK_LOCATION.latitude,
   lon: number = DEFAULT_FALLBACK_LOCATION.longitude
-): Promise<{ hourly: HourlyForecastPoint[]; current: WeatherCondition }> {
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,wind_speed_10m,weather_code&forecast_days=3&timezone=auto`;
+): Promise<{
+  hourly: HourlyForecastPoint[];
+  current: WeatherCondition;
+  dailyForecast: DailyForecastPoint[];
+}> {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=3&timezone=auto`;
 
   const res = await fetch(url);
   if (!res.ok) {
@@ -95,28 +144,60 @@ export async function fetchHourlyForecast(
       time: t,
       hour: d.getHours(),
       dateStr: t.split('T')[0],
-      tempC: temps[i] ?? 24,
-      rainProb: rainProbs[i] ?? 0,
-      windKmh: winds[i] ?? 8,
+      tempC: Math.round(temps[i] ?? 24),
+      rainProb: Math.max(0, Math.min(100, Math.round(rainProbs[i] ?? 0))),
+      windKmh: Math.max(0, Math.round(winds[i] ?? 8)),
     };
   });
 
-  const currentTemp = data.current?.temperature_2m ?? hourly[0]?.tempC ?? 26;
-  const currentHumidity = data.current?.relative_humidity_2m ?? 74;
-  const currentWind = data.current?.wind_speed_10m ?? hourly[0]?.windKmh ?? 10;
+  const currentTemp = Math.round(data.current?.temperature_2m ?? hourly[0]?.tempC ?? 26);
+  const currentHumidity = Math.max(0, Math.min(100, Math.round(data.current?.relative_humidity_2m ?? 74)));
+  const currentWind = Math.max(0, Math.round(data.current?.wind_speed_10m ?? hourly[0]?.windKmh ?? 10));
+  const currentCode = data.current?.weather_code ?? 1;
 
   const current: WeatherCondition = {
     temperatureC: currentTemp,
     humidityPct: currentHumidity,
     windSpeedKmh: currentWind,
-    condition: currentHumidity > 80 ? 'Humid & Overcast' : 'Partly Cloudy',
+    condition: getWeatherCodeLabel(currentCode),
     rainRisk: currentHumidity > 80 ? 'medium' : 'low',
     fungalRisk: currentHumidity > 75 ? 'high' : 'medium',
     sprayAdvisory: currentWind > MAX_SPRAY_WIND_KMH ? 'Windy drift caution' : 'Moderate spray conditions',
     lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
   };
 
-  return { hourly, current };
+  // Parse 3-day daily forecast
+  const dailyDates: string[] = data.daily?.time || [];
+  const dailyMaxTemps: number[] = data.daily?.temperature_2m_max || [];
+  const dailyMinTemps: number[] = data.daily?.temperature_2m_min || [];
+  const dailyRainMax: number[] = data.daily?.precipitation_probability_max || [];
+  const dailyCodes: number[] = data.daily?.weather_code || [];
+
+  const dailyForecast: DailyForecastPoint[] = dailyDates.slice(0, 3).map((dStr, idx) => {
+    const d = new Date(dStr);
+    const todayStr = new Date().toISOString().split('T')[0];
+    const isToday = dStr === todayStr;
+    const isTomorrow =
+      new Date(Date.now() + 86400000).toISOString().split('T')[0] === dStr;
+    const dayLabel = isToday
+      ? 'Today'
+      : isTomorrow
+      ? 'Tomorrow'
+      : d.toLocaleDateString([], { weekday: 'short' });
+
+    const code = dailyCodes[idx] ?? 1;
+    return {
+      date: dStr,
+      dayLabel,
+      tempMax: Math.round(dailyMaxTemps[idx] ?? 28),
+      tempMin: Math.round(dailyMinTemps[idx] ?? 18),
+      rainProbMax: Math.max(0, Math.min(100, Math.round(dailyRainMax[idx] ?? 10))),
+      weatherCode: code,
+      condition: getWeatherCodeLabel(code),
+    };
+  });
+
+  return { hourly, current, dailyForecast };
 }
 
 /**
@@ -141,7 +222,7 @@ export function evaluateHourQuality(
   if (point.rainProb >= MAX_SPRAY_RAIN_PROB_PCT) {
     return {
       quality: 'poor',
-      reason: `Rain risk elevated (${point.rainProb}% prob). Chemical wash-off expected.`,
+      reason: `Rain risk elevated (${point.rainProb}%). Chemical wash-off expected.`,
     };
   }
 
@@ -151,7 +232,7 @@ export function evaluateHourQuality(
   if (maxRainAfter >= MAX_SPRAY_RAIN_PROB_PCT) {
     return {
       quality: 'poor',
-      reason: `Rain forecast within 6h window (${maxRainAfter}% prob). Needs drying adherence.`,
+      reason: `Rain forecast within 6h post-spray (${maxRainAfter}%). Needs dry foliage.`,
     };
   }
 
@@ -159,7 +240,7 @@ export function evaluateHourQuality(
   if (point.windKmh >= MAX_SPRAY_WIND_KMH) {
     return {
       quality: 'poor',
-      reason: `High wind (${point.windKmh} km/h > ${MAX_SPRAY_WIND_KMH} km/h). Spray drift hazard.`,
+      reason: `Wind speed (${point.windKmh} km/h > ${MAX_SPRAY_WIND_KMH} km/h). Spray drift hazard.`,
     };
   }
 
@@ -167,7 +248,7 @@ export function evaluateHourQuality(
   if (point.tempC >= MAX_SPRAY_TEMP_C) {
     return {
       quality: 'moderate',
-      reason: `Temperature elevated (${point.tempC}°C). High droplet evaporation risk.`,
+      reason: `Elevated temperature (${point.tempC}°C). High droplet evaporation risk.`,
     };
   }
 
@@ -175,7 +256,7 @@ export function evaluateHourQuality(
   if (!isDiurnalPreferredHour(point.hour)) {
     return {
       quality: 'moderate',
-      reason: `Acceptable weather, but outside prime canopy absorption windows (5-9 AM, 4-7 PM).`,
+      reason: `Acceptable weather, but outside prime canopy absorption hours (5–9 AM, 4–7 PM).`,
     };
   }
 
@@ -186,14 +267,36 @@ export function evaluateHourQuality(
 }
 
 /**
- * 48-Hour Scanner for best 3-hour window
+ * 48-Hour Scanner for best 3-hour window.
+ * Strictly guarantees FUTURE-ONLY candidate evaluation from the current hour forward.
  */
 export function scanBestSprayWindow(
   hourly: HourlyForecastPoint[],
   problemName?: string,
-  locationName: string = DEFAULT_FALLBACK_LOCATION.name
+  locationName: string = DEFAULT_FALLBACK_LOCATION.name,
+  referenceDate?: Date,
+  dailyForecast?: DailyForecastPoint[]
 ): EvaluatedSprayWindow {
-  const pointsToScan = hourly.slice(0, 48);
+  // Validate and clamp all rain probabilities to 0-100%
+  const sanitized: HourlyForecastPoint[] = hourly.map((p) => ({
+    ...p,
+    rainProb: Math.max(0, Math.min(100, Math.round(p.rainProb || 0))),
+    tempC: Math.round(p.tempC),
+    windKmh: Math.max(0, Math.round(p.windKmh)),
+  }));
+
+  // FUTURE-ONLY FILTER:
+  // Reject past hours from the current moment forward
+  const now = referenceDate ? new Date(referenceDate) : new Date();
+  const currentHourEpoch = new Date(now).setMinutes(0, 0, 0);
+
+  const futurePoints = sanitized.filter((p) => {
+    const ptEpoch = new Date(p.time).getTime();
+    return ptEpoch >= currentHourEpoch;
+  });
+
+  // Use future points if available, otherwise fallback gracefully
+  const pointsToScan = (futurePoints.length >= WINDOW_DURATION_HOURS ? futurePoints : sanitized).slice(0, 48);
 
   interface WindowCandidate {
     startIndex: number;
@@ -202,6 +305,7 @@ export function scanBestSprayWindow(
     maxWind: number;
     maxRainWindow: number;
     maxRainBuffer: number;
+    bufferPointsCount: number;
     allDiurnal: boolean;
     violatesRain: boolean;
     violatesRainBuffer: boolean;
@@ -214,12 +318,15 @@ export function scanBestSprayWindow(
 
   for (let i = 0; i <= pointsToScan.length - WINDOW_DURATION_HOURS; i++) {
     const windowPoints = pointsToScan.slice(i, i + WINDOW_DURATION_HOURS);
-    const bufferPoints = pointsToScan.slice(i, i + WINDOW_DURATION_HOURS + RAIN_FREE_AFTER_WINDOW_HOURS);
+    const bufferPoints = pointsToScan.slice(
+      i + WINDOW_DURATION_HOURS,
+      i + WINDOW_DURATION_HOURS + RAIN_FREE_AFTER_WINDOW_HOURS
+    );
 
     const avgTemp = windowPoints.reduce((acc, p) => acc + p.tempC, 0) / WINDOW_DURATION_HOURS;
     const maxWind = Math.max(...windowPoints.map((p) => p.windKmh));
     const maxRainWindow = Math.max(...windowPoints.map((p) => p.rainProb));
-    const maxRainBuffer = Math.max(...bufferPoints.map((p) => p.rainProb), 0);
+    const maxRainBuffer = bufferPoints.length > 0 ? Math.max(...bufferPoints.map((p) => p.rainProb)) : 0;
     const allDiurnal = windowPoints.every((p) => isDiurnalPreferredHour(p.hour));
 
     const violatesRain = maxRainWindow >= MAX_SPRAY_RAIN_PROB_PCT;
@@ -245,6 +352,7 @@ export function scanBestSprayWindow(
       maxWind,
       maxRainWindow,
       maxRainBuffer,
+      bufferPointsCount: bufferPoints.length,
       allDiurnal,
       violatesRain,
       violatesRainBuffer,
@@ -263,6 +371,7 @@ export function scanBestSprayWindow(
     maxWind: 10,
     maxRainWindow: 5,
     maxRainBuffer: 10,
+    bufferPointsCount: 6,
     allDiurnal: true,
     violatesRain: false,
     violatesRainBuffer: false,
@@ -286,7 +395,7 @@ export function scanBestSprayWindow(
   // Format window title and reason
   const startDate = new Date(best.points[0].time);
   const endDate = new Date(best.points[WINDOW_DURATION_HOURS - 1].time);
-  // Add 1 hour to end time for display (e.g. 6 to 9 means 6:00 to 9:00)
+  // Add 1 hour to end time for display (e.g. 6 to 8 index means 6:00 to 9:00 AM)
   endDate.setHours(endDate.getHours() + 1);
 
   const todayStr = new Date().toDateString();
@@ -304,23 +413,40 @@ export function scanBestSprayWindow(
 
   let reason = '';
   let missedRuleExplanation = '';
+  let plainVerdict = '';
+
+  // Validate rain-free buffer before asserting it
+  const rainFreeConfirmed =
+    best.bufferPointsCount >= 4 && best.maxRainBuffer < MAX_SPRAY_RAIN_PROB_PCT;
 
   if (isOptimal) {
-    reason = `Wind < ${Math.round(best.maxWind)} km/h, rain probability < ${Math.round(best.maxRainBuffer)}% for 6h+, temp ${Math.round(best.avgTemp)}°C during calm daylight.`;
+    const rainClause = rainFreeConfirmed
+      ? 'rain-free for 6 hours post-spray'
+      : 'minimal rain probability';
+    reason = `Wind < ${Math.round(best.maxWind)} km/h, ${rainClause}, and mild temperature (${Math.round(best.avgTemp)}°C) during optimal canopy uptake window.`;
+    plainVerdict = `Good time to spray: ${windowTimeFormatted}`;
   } else if (isModerate) {
-    reason = `Acceptable spray window (${Math.round(best.maxWind)} km/h wind, rain-free), but timing falls outside peak absorption hours.`;
-    missedRuleExplanation = 'Outside prime morning/evening dew absorption window.';
+    reason = `Acceptable spray window (${Math.round(best.maxWind)} km/h wind, low rain risk), but timing falls outside prime diurnal morning/evening hours.`;
+    missedRuleExplanation = 'Outside peak morning/evening dew uptake hours (5–9 AM, 4–7 PM).';
+    plainVerdict = `Marginal spraying conditions today — check timing`;
   } else {
-    reason = `Least-bad option across 48h. Rain/wind conditions are sub-optimal; evaluate foliar systemic protector cautiously.`;
+    reason = `Least-bad option across next 48h. Atmospheric conditions are sub-optimal; proceed with foliar systemic treatments cautiously.`;
     const missedRules: string[] = [];
     if (best.violatesWind) missedRules.push(`Wind exceeds ${MAX_SPRAY_WIND_KMH} km/h (${Math.round(best.maxWind)} km/h)`);
     if (best.violatesRain) missedRules.push(`Rain probability >= ${MAX_SPRAY_RAIN_PROB_PCT}% (${Math.round(best.maxRainWindow)}%)`);
-    if (best.violatesRainBuffer) missedRules.push(`Rain within 6h post-spray (${Math.round(best.maxRainBuffer)}%)`);
+    if (best.violatesRainBuffer) missedRules.push(`Rain forecast within 6h buffer (${Math.round(best.maxRainBuffer)}%)`);
     if (best.violatesTemp) missedRules.push(`Temperature exceeds ${MAX_SPRAY_TEMP_C}°C (${Math.round(best.avgTemp)}°C)`);
     missedRuleExplanation = missedRules.join('; ');
+
+    const poorReason = best.violatesRain || best.violatesRainBuffer
+      ? 'rain expected'
+      : best.violatesWind
+      ? 'high wind drift'
+      : 'high temperature';
+    plainVerdict = `Not recommended to spray today — ${poorReason}`;
   }
 
-  // Construct 24-hour timeline bar
+  // Construct 24-hour timeline bar starting from current hour
   const timeline24 = pointsToScan.slice(0, 24).map((p, idx) => {
     const { quality, reason: ptReason } = evaluateHourQuality(p, pointsToScan, idx);
     const inBestWindow =
@@ -352,6 +478,7 @@ export function scanBestSprayWindow(
       ? 'Optimal conditions confirmed (low drift & zero wash-off)'
       : 'Calibrated from 48-hour continuous microclimate forecast',
     status: isOptimal ? 'optimal' : isModerate ? 'moderate' : 'poor',
+    plainVerdict,
     bestWindowTime: windowTimeFormatted,
     bestWindowReason: reason,
     isFallbackLeastBad,
@@ -361,5 +488,6 @@ export function scanBestSprayWindow(
     currentWind: Math.round(currentPoint.windKmh),
     currentRainRisk,
     locationName,
+    dailyForecast,
   };
 }

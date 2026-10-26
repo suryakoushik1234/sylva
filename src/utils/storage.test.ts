@@ -45,7 +45,8 @@ test('hasEnteredApp storage reads and writes correctly', () => {
 
 test('scans history serialization and retrieval works', () => {
   const mock = new MockStorage();
-  assert.deepEqual(loadStoredScans(mock), []);
+  // When empty, loadStoredScans initializes with default Indian scans for immediate realism
+  assert.ok(loadStoredScans(mock).length > 0);
 
   const sampleScan: ScanHistoryItem = {
     id: 'scan-1',

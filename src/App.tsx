@@ -10,7 +10,7 @@ const MainNavigator: React.FC = () => {
   const { hasEnteredApp, leafMood } = useApp();
 
   return (
-    <div className="relative min-h-screen text-[#203A37] selection:bg-[#A5C9BC] selection:text-[#203A37]">
+    <div className="relative min-h-screen bg-[var(--bg-app)] text-[var(--text-primary)] selection:bg-[var(--surface-highlight)] selection:text-[var(--text-primary)]">
       {/* Living Background (leaves and roots only on startup page, clean elsewhere) */}
       <LivingBackground leafMood={leafMood} showNatureElements={!hasEnteredApp} />
 

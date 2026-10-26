@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Camera,
@@ -141,7 +141,6 @@ export const ScanTab: React.FC = () => {
     const effectiveCrop = cropOverride || (selectedCrop === 'Auto-Detect' ? '' : selectedCrop);
 
     try {
-      // Call backend /api/diagnose
       const res = await fetch('/api/diagnose', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -157,9 +156,8 @@ export const ScanTab: React.FC = () => {
         const data = await res.json();
         if (data.diagnosis) {
           const d = data.diagnosis;
-          // Smooth loading indicator pause for UX stability
           const elapsed = Date.now() - startTime;
-          const waitTime = Math.max(0, 1600 - elapsed);
+          const waitTime = Math.max(0, 1500 - elapsed);
           if (waitTime > 0) {
             await new Promise((resolve) => setTimeout(resolve, waitTime));
           }
@@ -189,12 +187,12 @@ export const ScanTab: React.FC = () => {
         }
       }
     } catch {
-      // Network or API failure fallback
+      // Fallback below
     }
 
-    // Realistic pathologist fallback if server/network fails
+    // Pathologist fallback if server is offline
     const elapsed = Date.now() - startTime;
-    const remainingTime = Math.max(0, 1600 - elapsed);
+    const remainingTime = Math.max(0, 1500 - elapsed);
     setTimeout(() => {
       const isCorn = effectiveCrop.toLowerCase().includes('corn') || effectiveCrop.toLowerCase().includes('maize');
       const isPotato = effectiveCrop.toLowerCase().includes('potato');
@@ -250,22 +248,21 @@ export const ScanTab: React.FC = () => {
     setSelectedImage(null);
     setLatestDiagnosis(null);
     setErrorMsg(null);
-    setSymptomNote('');
   };
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
-      {/* Title Header */}
+      {/* Title Header with spring animate-in */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 0.999, y: 0 }}
         transition={BOUNCY_SPRING}
         className="space-y-1.5"
       >
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#203A37]">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
           {copy.title}
         </h1>
-        <p className="text-sm sm:text-base text-[#648078]">{copy.subtitle}</p>
+        <p className="text-sm sm:text-base text-[var(--text-secondary)]">{copy.subtitle}</p>
       </motion.div>
 
       {/* Hidden File Inputs */}
@@ -300,10 +297,10 @@ export const ScanTab: React.FC = () => {
           >
             {/* Main Diagnosis Summary Card */}
             <div className="sylva-card p-6 sm:p-8 space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b border-[#A5C9BC]/35">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b border-[var(--glass-border-subtle)]">
                 <div className="flex items-start gap-4">
                   {latestDiagnosis.imageUrl ? (
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border border-white/80 shrink-0 bg-[#EFF4F2] shadow-xs">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border border-[var(--glass-border)] shrink-0 bg-[var(--surface-glass)] shadow-2xs">
                       <img
                         src={latestDiagnosis.imageUrl}
                         alt="Scanned crop foliage"
@@ -311,19 +308,19 @@ export const ScanTab: React.FC = () => {
                       />
                     </div>
                   ) : (
-                    <div className="w-14 h-14 rounded-2xl bg-[#34796E]/12 border border-[#34796E]/20 flex items-center justify-center text-[#34796E] shrink-0">
+                    <div className="w-14 h-14 rounded-2xl bg-[var(--primary-accent)]/15 border border-[var(--primary-accent)]/30 flex items-center justify-center text-[var(--primary-accent)] shrink-0">
                       <Leaf className="w-7 h-7" />
                     </div>
                   )}
 
                   <div className="space-y-1">
-                    <div className="text-xs font-semibold tracking-wide uppercase text-[#648078]">
+                    <div className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">
                       {latestDiagnosis.cropName} • {latestDiagnosis.category}
                     </div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-[#203A37]">
+                    <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">
                       {latestDiagnosis.conditionName}
                     </h2>
-                    <p className="text-sm text-[#648078] leading-relaxed max-w-xl">
+                    <p className="text-sm text-[var(--text-secondary)] leading-relaxed max-w-xl">
                       {latestDiagnosis.summary}
                     </p>
                   </div>
@@ -348,9 +345,9 @@ export const ScanTab: React.FC = () => {
                     );
                   })()}
 
-                  <div className="text-xs text-[#648078]">
+                  <div className="text-xs text-[var(--text-secondary)]">
                     Confidence:{' '}
-                    <span className="font-bold text-[#203A37] tabular-nums">
+                    <span className="font-bold text-[var(--text-primary)] tabular-nums">
                       {latestDiagnosis.confidence.toFixed(1)}%
                     </span>
                   </div>
@@ -370,9 +367,9 @@ export const ScanTab: React.FC = () => {
                   whileHover={{ y: -1 }}
                   whileTap={{ scale: 0.96 }}
                   transition={BOUNCY_SPRING}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/80 bg-[#EFF4F2]/80 text-[#203A37] text-sm font-medium hover:border-[#34796E]/40 cursor-pointer shadow-xs"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] text-[var(--text-primary)] text-sm font-medium hover:border-[var(--primary-accent)]/40 cursor-pointer shadow-xs"
                 >
-                  <RotateCcw className="w-4 h-4 text-[#648078]" />
+                  <RotateCcw className="w-4 h-4 text-[var(--text-secondary)]" />
                   <span>Scan another leaf</span>
                 </motion.button>
 
@@ -381,7 +378,7 @@ export const ScanTab: React.FC = () => {
                   whileHover={{ y: -1 }}
                   whileTap={{ scale: 0.96 }}
                   transition={BOUNCY_SPRING}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#34796E] text-[#EFF4F2] text-sm font-semibold shadow-[0_4px_16px_rgba(52,121,110,0.22)] cursor-pointer hover:bg-[#2c655c]"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--primary-accent)] text-[var(--text-on-accent)] text-sm font-semibold shadow-[var(--glass-shadow-elevated)] cursor-pointer hover:opacity-90"
                 >
                   <span>View in Field Log</span>
                   <ArrowRight className="w-4 h-4" />
@@ -409,15 +406,15 @@ export const ScanTab: React.FC = () => {
                 ],
               }}
               transition={{ type: 'tween', duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-              className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-3xl overflow-hidden border-2 border-[#34796E]/50 bg-[#DDEBE5]/60 flex items-center justify-center"
+              className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-3xl overflow-hidden border-2 border-[var(--primary-accent)]/50 bg-[var(--surface-glass)] flex items-center justify-center"
             >
               {/* Corner Viewfinder Accents */}
-              <div className="absolute top-2.5 left-2.5 w-4 h-4 border-t-2 border-l-2 border-[#34796E] rounded-tl-sm z-10 pointer-events-none" />
-              <div className="absolute top-2.5 right-2.5 w-4 h-4 border-t-2 border-r-2 border-[#34796E] rounded-tr-sm z-10 pointer-events-none" />
-              <div className="absolute bottom-2.5 left-2.5 w-4 h-4 border-b-2 border-l-2 border-[#34796E] rounded-bl-sm z-10 pointer-events-none" />
-              <div className="absolute bottom-2.5 right-2.5 w-4 h-4 border-b-2 border-r-2 border-[#34796E] rounded-br-sm z-10 pointer-events-none" />
+              <div className="absolute top-2.5 left-2.5 w-4 h-4 border-t-2 border-l-2 border-[var(--primary-accent)] rounded-tl-sm z-10 pointer-events-none" />
+              <div className="absolute top-2.5 right-2.5 w-4 h-4 border-t-2 border-r-2 border-[var(--primary-accent)] rounded-tr-sm z-10 pointer-events-none" />
+              <div className="absolute bottom-2.5 left-2.5 w-4 h-4 border-b-2 border-l-2 border-[var(--primary-accent)] rounded-bl-sm z-10 pointer-events-none" />
+              <div className="absolute bottom-2.5 right-2.5 w-4 h-4 border-b-2 border-r-2 border-[var(--primary-accent)] rounded-br-sm z-10 pointer-events-none" />
 
-              {/* Uploaded Leaf Image with subtle breathing pulse */}
+              {/* Uploaded Leaf Image */}
               {selectedImage ? (
                 <motion.img
                   src={selectedImage}
@@ -427,14 +424,14 @@ export const ScanTab: React.FC = () => {
                   className="w-full h-full object-cover filter brightness-95"
                 />
               ) : (
-                <Leaf className="w-16 h-16 text-[#34796E]/40" />
+                <Leaf className="w-16 h-16 text-[var(--primary-accent)]/40" />
               )}
 
               {/* Sweeping scan laser bar */}
               <motion.div
                 animate={{ y: [-105, 105, -105] }}
                 transition={{ type: 'tween', duration: 2.0, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#34796E] to-transparent shadow-[0_0_14px_#34796E] z-10"
+                className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[var(--primary-accent)] to-transparent shadow-[0_0_14px_var(--primary-accent)] z-10"
               />
             </motion.div>
 
@@ -444,17 +441,17 @@ export const ScanTab: React.FC = () => {
               aria-live="polite"
               className="flex flex-col items-center space-y-3 max-w-sm"
             >
-              <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-white/80 bg-[#DDEBE5]/80 backdrop-blur-md shadow-xs">
+              <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] backdrop-blur-md shadow-xs">
                 <span className="relative flex h-3 w-3 items-center justify-center">
                   <motion.span
                     animate={{ scale: [1, 2.3], opacity: [0.75, 0] }}
                     transition={{ type: 'tween', duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
-                    className="absolute inline-flex h-full w-full rounded-full bg-[#34796E]"
+                    className="absolute inline-flex h-full w-full rounded-full bg-[var(--primary-accent)]"
                   />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#34796E]" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--primary-accent)]" />
                 </span>
 
-                <span className="text-xs font-semibold text-[#203A37] tracking-wide">
+                <span className="text-xs font-semibold text-[var(--text-primary)] tracking-wide">
                   Sylva AI Pathologist Analyzing
                 </span>
               </div>
@@ -462,7 +459,7 @@ export const ScanTab: React.FC = () => {
               <motion.h2
                 animate={{ opacity: [0.82, 1, 0.82] }}
                 transition={{ type: 'tween', duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-                className="text-lg sm:text-xl font-bold text-[#203A37]"
+                className="text-lg sm:text-xl font-bold text-[var(--text-primary)]"
               >
                 Diagnosing Foliar Health
               </motion.h2>
@@ -470,18 +467,10 @@ export const ScanTab: React.FC = () => {
               <motion.p
                 animate={{ opacity: [0.65, 0.95, 0.65] }}
                 transition={{ type: 'tween', duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-                className="text-xs sm:text-sm text-[#648078] leading-relaxed"
+                className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed"
               >
                 Identifying pathogen type, urgency level, and IPM recovery plan...
               </motion.p>
-
-              <div className="w-48 sm:w-60 h-1.5 rounded-full bg-[#EFF4F2] overflow-hidden relative border border-white/60 mt-1">
-                <motion.div
-                  animate={{ x: ['-100%', '100%'] }}
-                  transition={{ type: 'tween', duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-                  className="w-1/2 h-full bg-gradient-to-r from-transparent via-[#34796E] to-transparent rounded-full"
-                />
-              </div>
             </div>
           </motion.div>
         ) : (
@@ -502,20 +491,20 @@ export const ScanTab: React.FC = () => {
               onDrop={handleDrop}
               className={`relative sylva-card p-8 sm:p-12 border-2 border-dashed transition-all duration-200 text-center flex flex-col items-center justify-center select-none ${
                 dragActive
-                  ? 'border-[#34796E] bg-[#DDEBE5]/90 scale-[1.01]'
-                  : 'border-[#A5C9BC]/60 hover:border-[#34796E]/60'
+                  ? 'border-[var(--primary-accent)] bg-[var(--surface-glass-elevated)] scale-[1.01]'
+                  : 'border-[var(--glass-border)] hover:border-[var(--primary-accent)]/60'
               }`}
             >
               {/* Four Viewfinder Corner Accents */}
-              <div className="absolute top-4 left-4 w-5 h-5 border-t-2 border-l-2 border-[#34796E] rounded-tl-md pointer-events-none" />
-              <div className="absolute top-4 right-4 w-5 h-5 border-t-2 border-r-2 border-[#34796E] rounded-tr-md pointer-events-none" />
-              <div className="absolute bottom-4 left-4 w-5 h-5 border-b-2 border-l-2 border-[#34796E] rounded-bl-md pointer-events-none" />
-              <div className="absolute bottom-4 right-4 w-5 h-5 border-b-2 border-r-2 border-[#34796E] rounded-br-md pointer-events-none" />
+              <div className="absolute top-4 left-4 w-5 h-5 border-t-2 border-l-2 border-[var(--primary-accent)] rounded-tl-md pointer-events-none" />
+              <div className="absolute top-4 right-4 w-5 h-5 border-t-2 border-r-2 border-[var(--primary-accent)] rounded-tr-md pointer-events-none" />
+              <div className="absolute bottom-4 left-4 w-5 h-5 border-b-2 border-l-2 border-[var(--primary-accent)] rounded-bl-md pointer-events-none" />
+              <div className="absolute bottom-4 right-4 w-5 h-5 border-b-2 border-r-2 border-[var(--primary-accent)] rounded-br-md pointer-events-none" />
 
               {selectedImage ? (
                 /* Selected Preview State */
                 <div className="space-y-5 max-w-md w-full">
-                  <div className="relative w-44 h-44 sm:w-52 sm:h-52 mx-auto rounded-2xl overflow-hidden border-2 border-white/90 shadow-md bg-[#EFF4F2]">
+                  <div className="relative w-44 h-44 sm:w-52 sm:h-52 mx-auto rounded-2xl overflow-hidden border-2 border-[var(--glass-border)] shadow-md bg-[var(--surface-glass)]">
                     <img
                       src={selectedImage}
                       alt="Crop foliage preview"
@@ -524,27 +513,27 @@ export const ScanTab: React.FC = () => {
                   </div>
 
                   <div className="space-y-1">
-                    <h3 className="text-base font-semibold text-[#203A37]">
+                    <h3 className="text-base font-semibold text-[var(--text-primary)]">
                       Leaf photo ready
                     </h3>
-                    <p className="text-xs text-[#648078]">
+                    <p className="text-xs text-[var(--text-secondary)]">
                       Clear view of spots, discoloration, or pustules.
                     </p>
                   </div>
 
                   {/* Crop Selector */}
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-1">
-                    <label htmlFor="crop-select" className="text-xs font-semibold text-[#648078]">
+                    <label htmlFor="crop-select" className="text-xs font-semibold text-[var(--text-secondary)]">
                       Crop:
                     </label>
                     <select
                       id="crop-select"
                       value={selectedCrop}
                       onChange={(e) => setSelectedCrop(e.target.value)}
-                      className="px-3 py-1.5 rounded-xl border border-white/80 bg-[#EFF4F2]/90 text-xs font-semibold text-[#203A37] focus:outline-none focus:ring-2 focus:ring-[#34796E]/40 cursor-pointer shadow-2xs max-w-full"
+                      className="px-3 py-1.5 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] text-xs font-semibold text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-accent)]/40 cursor-pointer shadow-2xs max-w-full"
                     >
                       {COMMON_CROPS.map((c) => (
-                        <option key={c} value={c}>
+                        <option key={c} value={c} className="bg-[var(--bg-app)] text-[var(--text-primary)]">
                           {c}
                         </option>
                       ))}
@@ -558,7 +547,7 @@ export const ScanTab: React.FC = () => {
                       whileHover={{ y: -1 }}
                       whileTap={{ scale: 0.96 }}
                       transition={BOUNCY_SPRING}
-                      className="px-4 py-2.5 rounded-xl border border-white/80 bg-[#EFF4F2]/80 text-[#203A37] text-xs font-medium hover:bg-[#EFF4F2] cursor-pointer"
+                      className="px-4 py-2.5 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] text-[var(--text-primary)] text-xs font-medium hover:bg-[var(--surface-glass)] cursor-pointer"
                     >
                       Change photo
                     </motion.button>
@@ -568,7 +557,7 @@ export const ScanTab: React.FC = () => {
                       whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.96 }}
                       transition={BOUNCY_SPRING}
-                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#34796E] text-[#EFF4F2] text-xs font-semibold shadow-[0_6px_20px_rgba(52,121,110,0.22)] hover:bg-[#2c655c] cursor-pointer"
+                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[var(--primary-accent)] text-[var(--text-on-accent)] text-xs font-semibold shadow-[var(--glass-shadow-elevated)] hover:opacity-90 cursor-pointer"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
                       <span>Diagnose Now</span>
@@ -578,15 +567,15 @@ export const ScanTab: React.FC = () => {
               ) : (
                 /* Empty Capture Area */
                 <div className="space-y-4 max-w-md">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-[#34796E]/12 border border-[#34796E]/20 flex items-center justify-center text-[#34796E] mx-auto shadow-xs">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-[var(--primary-accent)]/15 border border-[var(--primary-accent)]/30 flex items-center justify-center text-[var(--primary-accent)] mx-auto shadow-xs">
                     <Camera className="w-8 h-8 sm:w-10 sm:h-10" />
                   </div>
 
                   <div className="space-y-1">
-                    <h2 className="text-lg sm:text-xl font-bold text-[#203A37]">
+                    <h2 className="text-lg sm:text-xl font-bold text-[var(--text-primary)]">
                       Photograph or upload leaf photo
                     </h2>
-                    <p className="text-xs sm:text-sm text-[#648078] max-w-sm mx-auto">
+                    <p className="text-xs sm:text-sm text-[var(--text-secondary)] max-w-sm mx-auto">
                       Snap a leaf photo with your device camera or upload an existing image from your gallery for instant diagnosis.
                     </p>
                   </div>
@@ -598,7 +587,7 @@ export const ScanTab: React.FC = () => {
                       whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.96 }}
                       transition={BOUNCY_SPRING}
-                      className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#34796E] text-[#EFF4F2] font-semibold text-sm shadow-[0_6px_20px_rgba(52,121,110,0.24)] hover:bg-[#2c655c] cursor-pointer"
+                      className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-[var(--primary-accent)] text-[var(--text-on-accent)] font-semibold text-sm shadow-[var(--glass-shadow-elevated)] hover:opacity-90 cursor-pointer"
                     >
                       <Camera className="w-4 h-4" />
                       <span>Snap Leaf Photo</span>
@@ -609,15 +598,15 @@ export const ScanTab: React.FC = () => {
                       whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.96 }}
                       transition={BOUNCY_SPRING}
-                      className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-white/80 bg-[#EFF4F2]/80 text-[#203A37] font-semibold text-sm hover:border-[#34796E]/40 hover:bg-[#EFF4F2] cursor-pointer shadow-xs"
+                      className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] text-[var(--text-primary)] font-semibold text-sm hover:border-[var(--primary-accent)]/40 hover:bg-[var(--surface-glass)] cursor-pointer shadow-xs"
                     >
-                      <UploadCloud className="w-4 h-4 text-[#34796E]" />
+                      <UploadCloud className="w-4 h-4 text-[var(--primary-accent)]" />
                       <span>Upload From Files</span>
                     </motion.button>
                   </div>
 
                   {errorMsg && (
-                    <div className="text-xs font-medium text-[#A8423F] pt-2">
+                    <div className="text-xs font-medium text-[var(--status-poor)] pt-2">
                       {errorMsg}
                     </div>
                   )}
@@ -628,10 +617,10 @@ export const ScanTab: React.FC = () => {
             {/* "Try a sample" row of 3 real leaf photos from /public/samples */}
             <div className="space-y-3 pt-2">
               <div className="flex items-center justify-between px-1">
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#648078]">
+                <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
                   Try a sample (Real Foliage Photos)
                 </span>
-                <span className="text-xs text-[#648078]">Runs real diagnosis route</span>
+                <span className="text-xs text-[var(--text-secondary)]">Runs real diagnosis route</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -642,9 +631,9 @@ export const ScanTab: React.FC = () => {
                     whileHover={{ y: -2 }}
                     whileTap={{ scale: 0.97 }}
                     transition={BOUNCY_SPRING}
-                    className="sylva-card p-3.5 text-left cursor-pointer transition-all duration-150 hover:border-[#34796E]/50 flex items-center gap-3.5 group"
+                    className="sylva-card p-3.5 text-left cursor-pointer transition-all duration-150 hover:border-[var(--primary-accent)]/50 flex items-center gap-3.5 group"
                   >
-                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-[#EFF4F2] border border-white/90 shrink-0 shadow-2xs">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-[var(--surface-glass)] border border-[var(--glass-border)] shrink-0 shadow-2xs">
                       <img
                         src={sample.imagePath}
                         alt={sample.label}
@@ -654,13 +643,13 @@ export const ScanTab: React.FC = () => {
                     </div>
 
                     <div className="space-y-1 min-w-0 flex-1">
-                      <div className="text-xs font-bold text-[#203A37] truncate">
+                      <div className="text-xs font-bold text-[var(--text-primary)] truncate">
                         {sample.label}
                       </div>
-                      <div className="text-[11px] text-[#648078] line-clamp-1">
+                      <div className="text-[11px] text-[var(--text-secondary)] line-clamp-1">
                         {sample.hint}
                       </div>
-                      <div className="text-[11px] font-semibold text-[#34796E] flex items-center gap-1">
+                      <div className="text-[11px] font-semibold text-[var(--primary-accent)] flex items-center gap-1">
                         <span>Inspect sample</span>
                         <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                       </div>

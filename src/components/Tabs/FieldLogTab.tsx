@@ -79,9 +79,9 @@ export const FieldLogTab: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
             transition={BOUNCY_SPRING}
-            className="fixed top-5 right-5 z-50 px-4 py-2 rounded-xl bg-[#203A37] text-[#EFF4F2] text-xs font-semibold shadow-lg flex items-center gap-2"
+            className="fixed top-5 right-5 z-50 px-4 py-2 rounded-xl bg-[var(--text-primary)] text-[var(--bg-app)] text-xs font-semibold shadow-lg flex items-center gap-2"
           >
-            <Check className="w-3.5 h-3.5 text-[#A5C9BC]" />
+            <Check className="w-3.5 h-3.5 text-[var(--primary-accent)]" />
             <span>{toastMessage}</span>
           </motion.div>
         )}
@@ -92,13 +92,13 @@ export const FieldLogTab: React.FC = () => {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 0.999, y: 0 }}
         transition={BOUNCY_SPRING}
-        className="flex items-center justify-between"
+        className="flex items-center justify-between flex-wrap gap-3"
       >
         <div className="space-y-1.5">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#203A37]">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
             {copy.title}
           </h1>
-          <p className="text-sm sm:text-base text-[#648078]">{copy.subtitle}</p>
+          <p className="text-sm sm:text-base text-[var(--text-secondary)]">{copy.subtitle}</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -111,7 +111,7 @@ export const FieldLogTab: React.FC = () => {
               });
               showToast('Loaded sample field records');
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-[#EFF4F2]/80 text-[#34796E] hover:bg-white text-xs font-semibold cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] text-[var(--primary-accent)] hover:opacity-90 text-xs font-semibold cursor-pointer shadow-2xs"
             title="Load realistic field inspection logs"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -125,7 +125,7 @@ export const FieldLogTab: React.FC = () => {
                   clearScans();
                 }
               }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-[#EFF4F2]/80 text-[#648078] hover:text-[#A8423F] hover:bg-white text-xs font-semibold cursor-pointer shadow-2xs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] text-[var(--text-secondary)] hover:text-[var(--status-poor)] text-xs font-semibold cursor-pointer shadow-2xs"
               title="Clear all logs"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -144,13 +144,13 @@ export const FieldLogTab: React.FC = () => {
       >
         {scans.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center py-12 space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-[#34796E]/12 border border-[#34796E]/20 flex items-center justify-center text-[#34796E]">
+            <div className="w-14 h-14 rounded-2xl bg-[var(--primary-accent)]/15 border border-[var(--primary-accent)]/30 flex items-center justify-center text-[var(--primary-accent)]">
               <BookOpenCheck className="w-7 h-7" />
             </div>
             <div className="space-y-1">
-              <h2 className="text-base font-semibold text-[#203A37]">No logs recorded yet</h2>
-              <p className="text-xs sm:text-sm text-[#648078] max-w-sm">
-                Complete a leaf scan or load authentic field inspections (Rice, Cotton, Mustard, Wheat, Tomato) with IPM recovery plans.
+              <h2 className="text-base font-semibold text-[var(--text-primary)]">No logs recorded yet</h2>
+              <p className="text-xs sm:text-sm text-[var(--text-secondary)] max-w-sm">
+                Complete a leaf scan or load authentic field inspections with IPM recovery plans.
               </p>
             </div>
 
@@ -160,14 +160,14 @@ export const FieldLogTab: React.FC = () => {
                   DEFAULT_INDIAN_SCANS.forEach((s) => addScan(s));
                   showToast('Loaded sample records');
                 }}
-                className="px-4 py-2 rounded-xl bg-[#34796E] text-[#EFF4F2] text-xs font-semibold hover:bg-[#2c655c] cursor-pointer shadow-xs"
+                className="px-4 py-2 rounded-xl bg-[var(--primary-accent)] text-[var(--text-on-accent)] text-xs font-semibold hover:opacity-90 cursor-pointer shadow-xs"
               >
                 Load Sample Records
               </button>
 
               <button
                 onClick={() => setActiveTab('scan')}
-                className="px-4 py-2 rounded-xl border border-white/80 bg-[#EFF4F2]/80 text-[#203A37] text-xs font-semibold hover:bg-[#EFF4F2] cursor-pointer"
+                className="px-4 py-2 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] text-[var(--text-primary)] text-xs font-semibold hover:opacity-90 cursor-pointer"
               >
                 Go to Scan Tab
               </button>
@@ -188,15 +188,15 @@ export const FieldLogTab: React.FC = () => {
               return (
                 <div
                   key={scan.id}
-                  className="rounded-2xl bg-[#EFF4F2]/75 border border-white/80 overflow-hidden transition-all duration-200"
+                  className="rounded-2xl bg-[var(--surface-glass-elevated)] border border-[var(--glass-border)] overflow-hidden transition-all duration-200"
                 >
                   <div
                     onClick={() => setExpandedScanId(isExpanded ? null : scan.id)}
-                    className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer hover:bg-[#EFF4F2] select-none"
+                    className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer hover:bg-[var(--surface-glass)] select-none"
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
                       {scan.imageThumbnail ? (
-                        <div className="w-14 h-14 rounded-2xl overflow-hidden bg-white shrink-0 border border-white/80 shadow-2xs">
+                        <div className="w-14 h-14 rounded-2xl overflow-hidden bg-[var(--surface-glass)] shrink-0 border border-[var(--glass-border)] shadow-2xs">
                           <img
                             src={scan.imageThumbnail}
                             alt={scan.cropName}
@@ -204,24 +204,24 @@ export const FieldLogTab: React.FC = () => {
                           />
                         </div>
                       ) : (
-                        <div className="w-14 h-14 rounded-2xl bg-[#34796E]/10 flex items-center justify-center text-[#34796E] shrink-0">
+                        <div className="w-14 h-14 rounded-2xl bg-[var(--primary-accent)]/15 flex items-center justify-center text-[var(--primary-accent)] shrink-0">
                           <Leaf className="w-6 h-6" />
                         </div>
                       )}
 
                       <div className="min-w-0 space-y-0.5">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs sm:text-sm font-bold text-[#203A37]">
+                          <span className="text-xs sm:text-sm font-bold text-[var(--text-primary)]">
                             {scan.cropName}
                           </span>
-                          <span className="text-[10px] font-semibold text-[#34796E] bg-[#34796E]/12 px-2 py-0.5 rounded-md">
+                          <span className="text-[10px] font-semibold text-[var(--primary-accent)] bg-[var(--primary-accent)]/15 px-2 py-0.5 rounded-md">
                             Leaf Foliage
                           </span>
                         </div>
-                        <div className="text-xs font-semibold text-[#648078]">
+                        <div className="text-xs font-semibold text-[var(--text-secondary)]">
                           {scan.conditionName}
                         </div>
-                        <div className="text-xs text-[#648078] truncate max-w-md">
+                        <div className="text-xs text-[var(--text-secondary)] truncate max-w-md">
                           {scan.shortSummary}
                         </div>
                       </div>
@@ -239,7 +239,7 @@ export const FieldLogTab: React.FC = () => {
                         {scan.severity} ({Math.round(scan.confidence)}%)
                       </span>
 
-                      <span className="text-[11px] text-[#648078] hidden sm:flex items-center gap-1">
+                      <span className="text-[11px] text-[var(--text-secondary)] hidden sm:flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         {dateStr}
                       </span>
@@ -247,13 +247,13 @@ export const FieldLogTab: React.FC = () => {
                       {/* Share button */}
                       <button
                         onClick={(e) => handleShareScan(scan, e)}
-                        className="p-1.5 rounded-lg border border-white/80 bg-white/80 text-[#34796E] hover:bg-[#DDEBE5] transition-colors cursor-pointer shadow-2xs"
+                        className="p-1.5 rounded-lg border border-[var(--glass-border)] bg-[var(--surface-glass)] text-[var(--primary-accent)] hover:bg-[var(--surface-glass-elevated)] transition-colors cursor-pointer shadow-2xs"
                         title="Share report"
                       >
                         <Share2 className="w-3.5 h-3.5" />
                       </button>
 
-                      <div className="p-1 text-[#648078]">
+                      <div className="p-1 text-[var(--text-secondary)]">
                         {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                       </div>
                     </div>
@@ -261,7 +261,7 @@ export const FieldLogTab: React.FC = () => {
 
                   {/* Expanded Action Plan Card View */}
                   {isExpanded && (
-                    <div className="p-4 pt-0 border-t border-[#A5C9BC]/25">
+                    <div className="p-4 pt-0 border-t border-[var(--glass-border-subtle)]">
                       <ActionPlanCard
                         diagnosis={{
                           id: scan.id,
