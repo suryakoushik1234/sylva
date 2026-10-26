@@ -17,6 +17,49 @@ export const DEFAULT_FALLBACK_LOCATION = {
   name: 'Pune Region (Maharashtra Agri Belt)',
 };
 
+export interface GeoLocationResult {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  country?: string;
+  admin1?: string;
+}
+
+export const INDIAN_AGRICULTURAL_HUBS = [
+  { name: 'Pune (Maharashtra)', detail: 'Sugarcane, Grapes, Pomegranate', latitude: 18.5204, longitude: 73.8567 },
+  { name: 'Nashik (Maharashtra)', detail: 'Onions, Grapes, Tomato', latitude: 19.9975, longitude: 73.7898 },
+  { name: 'Nagpur / Vidarbha (Maharashtra)', detail: 'Cotton, Oranges, Soybean', latitude: 21.1458, longitude: 79.0882 },
+  { name: 'Varanasi (Uttar Pradesh)', detail: 'Paddy Rice, Wheat, Veg', latitude: 25.3176, longitude: 82.9739 },
+  { name: 'Ludhiana (Punjab)', detail: 'Wheat, Paddy, Cotton', latitude: 30.9010, longitude: 75.8573 },
+  { name: 'Karnal (Haryana)', detail: 'Basmati Rice, Mustard, Wheat', latitude: 29.6857, longitude: 76.9905 },
+  { name: 'Guntur (Andhra Pradesh)', detail: 'Chilli, Cotton, Tobacco', latitude: 16.3067, longitude: 80.4365 },
+  { name: 'Warangal (Telangana)', detail: 'Cotton, Chilli, Turmeric', latitude: 17.9689, longitude: 79.5941 },
+  { name: 'Indore / Malwa (Madhya Pradesh)', detail: 'Soybean, Wheat, Garlic', latitude: 22.7196, longitude: 75.8577 },
+  { name: 'Rajkot (Gujarat)', detail: 'Groundnut, Cotton, Sesame', latitude: 22.3039, longitude: 70.8022 },
+  { name: 'Coimbatore (Tamil Nadu)', detail: 'Coconut, Cotton, Tea', latitude: 11.0168, longitude: 76.9558 },
+  { name: 'Mysuru / Mandya (Karnataka)', detail: 'Paddy, Sugarcane, Ragi', latitude: 12.2958, longitude: 76.6394 },
+  { name: 'Patna (Bihar)', detail: 'Maize, Rice, Pulses', latitude: 25.5941, longitude: 85.1376 },
+  { name: 'Jaipur / Alwar (Rajasthan)', detail: 'Mustard, Bajra, Guar', latitude: 26.9124, longitude: 75.7873 },
+  { name: 'Shimla (Himachal Pradesh)', detail: 'Apple, Pear, Stone Fruit', latitude: 31.1048, longitude: 77.1734 },
+  { name: 'New Delhi (NCR)', detail: 'Wheat, Mustard, Horticulture', latitude: 28.6139, longitude: 77.2090 },
+];
+
+export async function searchLocations(query: string): Promise<GeoLocationResult[]> {
+  if (!query || query.trim().length < 2) return [];
+  try {
+    const res = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query.trim())}&count=8&language=en&format=json`
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.results || [];
+  } catch (err) {
+    console.warn('Geocoding search error:', err);
+    return [];
+  }
+}
+
 export interface HourlyForecastPoint {
   time: string;
   hour: number;

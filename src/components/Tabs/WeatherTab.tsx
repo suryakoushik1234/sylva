@@ -13,6 +13,9 @@ import {
   AlertCircle,
   XCircle,
   Thermometer,
+  Search,
+  MapPin,
+  ChevronDown,
 } from 'lucide-react';
 import { BOUNCY_SPRING } from '../../theme';
 import { useApp } from '../../context/AppContext';
@@ -20,6 +23,9 @@ import {
   fetchHourlyForecast,
   scanBestSprayWindow,
   DEFAULT_FALLBACK_LOCATION,
+  INDIAN_AGRICULTURAL_HUBS,
+  searchLocations,
+  GeoLocationResult,
   HourlyForecastPoint,
   MAX_SPRAY_WIND_KMH,
   MAX_SPRAY_RAIN_PROB_PCT,
@@ -41,6 +47,12 @@ export const WeatherTab: React.FC = () => {
     lat: DEFAULT_FALLBACK_LOCATION.latitude,
     lon: DEFAULT_FALLBACK_LOCATION.longitude,
   });
+
+  // Location selector state
+  const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<GeoLocationResult[]>([]);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
 
   const titles: Record<string, { title: string; subtitle: string }> = {
     en: {
@@ -87,6 +99,46 @@ export const WeatherTab: React.FC = () => {
     }
   };
 
+  // Perform live search when typing place name
+  const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSearchQuery(val);
+    if (val.trim().length >= 2) {
+      setIsSearching(true);
+      const res = await searchLocations(val);
+      setSearchResults(res);
+      setIsSearching(false);
+    } else {
+      setSearchResults([]);
+    }
+  };
+
+  const handleSelectLocation = (lat: number, lon: number, name: string) => {
+    setCoords({ lat, lon });
+    setCurrentLocationName(name);
+    setShowLocationPicker(false);
+    setSearchQuery('');
+    setSearchResults([]);
+    loadWeather(lat, lon, name);
+  };
+
+  const handleUseGps = () => {
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          const locName = `Detected Field Coordinates (${lat.toFixed(2)}°, ${lon.toFixed(2)}°)`;
+          handleSelectLocation(lat, lon, locName);
+        },
+        () => {
+          alert('GPS location permission denied or unavailable.');
+        },
+        { timeout: 6000 }
+      );
+    }
+  };
+
   // Auto-detect geolocation with fallback on mount
   useEffect(() => {
     if (typeof navigator !== 'undefined' && navigator.geolocation) {
@@ -94,7 +146,7 @@ export const WeatherTab: React.FC = () => {
         (pos) => {
           const lat = pos.coords.latitude;
           const lon = pos.coords.longitude;
-          const locName = `Detected Field Coordinates (${lat.toFixed(2)}°, ${lon.toFixed(2)}°)`;
+          const locName = `Detected Field (${lat.toFixed(2)}°, ${lon.toFixed(2)}°)`;
           setCoords({ lat, lon });
           setCurrentLocationName(locName);
           loadWeather(lat, lon, locName);
@@ -166,12 +218,17 @@ export const WeatherTab: React.FC = () => {
           <p className="text-sm sm:text-base text-[#648078]">{copy.subtitle}</p>
         </div>
 
-        {/* Location chip & refresh */}
+        {/* Location selector trigger & refresh */}
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/80 bg-[#EFF4F2]/80 backdrop-blur-md text-xs font-semibold text-[#203A37] shadow-2xs">
-            <Compass className="w-3.5 h-3.5 text-[#34796E]" />
-            <span className="truncate max-w-[210px]">{currentLocationName}</span>
-          </div>
+          <button
+            onClick={() => setShowLocationPicker(!showLocationPicker)}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/80 bg-[#EFF4F2]/90 hover:bg-[#DDEBE5] transition-colors text-xs font-semibold text-[#203A37] shadow-2xs cursor-pointer"
+            title="Choose any location or search city"
+          >
+            <MapPin className="w-3.5 h-3.5 text-[#34796E]" />
+            <span className="truncate max-w-[190px]">{currentLocationName}</span>
+            <ChevronDown className="w-3 h-3 text-[#648078]" />
+          </button>
 
           <button
             onClick={() => loadWeather(coords.lat, coords.lon, currentLocationName)}
@@ -183,6 +240,108 @@ export const WeatherTab: React.FC = () => {
           </button>
         </div>
       </motion.div>
+
+      {/* EXPANDABLE LOCATION PICKER MODAL / CARD */}
+      {showLocationPicker && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={BOUNCY_SPRING}
+          className="sylva-card p-5 sm:p-6 space-y-4 border-2 border-[#34796E]/30 bg-[#EFF4F2]/95 backdrop-blur-xl shadow-lg"
+        >
+          <div className="flex items-center justify-between pb-2 border-b border-[#A5C9BC]/35">
+            <div className="space-y-0.5">
+              <h3 className="text-sm font-bold text-[#203A37] flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-[#34796E]" />
+                <span>Choose Any Location / Field Location</span>
+              </h3>
+              <p className="text-xs text-[#648078]">
+                Search any Indian city, district, village, or worldwide coordinates.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowLocationPicker(false)}
+              className="text-xs font-semibold text-[#648078] hover:text-[#203A37] px-2 py-1 rounded-lg hover:bg-white/60 cursor-pointer"
+            >
+              Done
+            </button>
+          </div>
+
+          {/* Search Box */}
+          <div className="relative">
+            <Search className="w-4 h-4 text-[#648078] absolute left-3.5 top-3" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder="Search any place (e.g. Pune, Ludhiana, Varanasi, Warangal, Guntur, Nashik)..."
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/90 bg-white/90 text-xs sm:text-sm text-[#203A37] placeholder-[#648078] focus:outline-none focus:ring-2 focus:ring-[#34796E]/40 shadow-2xs"
+              autoFocus
+            />
+            {isSearching && (
+              <span className="absolute right-3.5 top-3 text-[11px] text-[#648078]">
+                Searching...
+              </span>
+            )}
+          </div>
+
+          {/* Search Results Dropdown */}
+          {searchResults.length > 0 && (
+            <div className="p-1 rounded-xl bg-white border border-[#A5C9BC]/40 shadow-md divide-y divide-[#EFF4F2] max-h-48 overflow-y-auto">
+              {searchResults.map((r) => {
+                const label = `${r.name}${r.admin1 ? `, ${r.admin1}` : ''}${r.country ? `, ${r.country}` : ''}`;
+                return (
+                  <button
+                    key={r.id}
+                    onClick={() => handleSelectLocation(r.latitude, r.longitude, label)}
+                    className="w-full text-left px-3.5 py-2 hover:bg-[#DDEBE5]/70 text-xs text-[#203A37] flex items-center justify-between cursor-pointer"
+                  >
+                    <span className="font-medium truncate">{label}</span>
+                    <span className="text-[10px] text-[#648078] shrink-0 tabular-nums">
+                      {r.latitude.toFixed(2)}°, {r.longitude.toFixed(2)}°
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Quick Actions: GPS Auto-detect */}
+          <div className="flex items-center gap-2 pt-1">
+            <button
+              onClick={handleUseGps}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#34796E]/30 bg-[#34796E]/10 hover:bg-[#34796E]/20 text-[#34796E] text-xs font-semibold cursor-pointer transition-colors"
+            >
+              <Compass className="w-3.5 h-3.5" />
+              <span>Use Current GPS Coordinates</span>
+            </button>
+          </div>
+
+          {/* Quick Agricultural Regions of India */}
+          <div className="space-y-2 pt-1">
+            <div className="text-[11px] font-bold text-[#648078] uppercase tracking-wider">
+              Popular Indian Agricultural Regions:
+            </div>
+            <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
+              {INDIAN_AGRICULTURAL_HUBS.map((hub) => (
+                <button
+                  key={hub.name}
+                  onClick={() => handleSelectLocation(hub.latitude, hub.longitude, hub.name)}
+                  className={`px-3 py-1.5 rounded-xl border text-xs cursor-pointer transition-all ${
+                    currentLocationName === hub.name
+                      ? 'bg-[#34796E] text-white border-[#34796E]'
+                      : 'bg-white/80 border-white/90 text-[#203A37] hover:border-[#34796E]/50 hover:bg-white'
+                  }`}
+                  title={hub.detail}
+                >
+                  <span className="font-semibold">{hub.name}</span>
+                  <span className="text-[10px] opacity-75 ml-1 hidden sm:inline">({hub.detail})</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* BEST SPRAY WINDOW CARD */}
       <motion.div
@@ -249,7 +408,7 @@ export const WeatherTab: React.FC = () => {
                   className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#34796E] text-[#EFF4F2] text-xs font-semibold hover:bg-[#2c655c] cursor-pointer shadow-xs self-start sm:self-auto"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Ask Sylva Voice</span>
+                  <span>Ask Sylva about Spray Timing</span>
                 </motion.button>
               </div>
 

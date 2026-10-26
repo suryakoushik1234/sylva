@@ -361,7 +361,7 @@ export const ActionPlanCard: React.FC<ActionPlanCardProps> = ({
           className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-white/90 bg-[#EFF4F2]/80 text-[#34796E] text-xs font-semibold hover:bg-[#DDEBE5] cursor-pointer shadow-2xs ml-auto"
         >
           <Sparkles className="w-3.5 h-3.5" />
-          <span>Ask Sylva Voice / Chat</span>
+          <span>Ask Sylva Agronomist</span>
         </motion.button>
       </div>
 

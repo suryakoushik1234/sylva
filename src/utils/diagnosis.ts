@@ -13,8 +13,8 @@ export const REAL_SAMPLE_LEAVES: RealSampleLeaf[] = [
     id: 'sample-tomato-blight',
     cropName: 'Tomato',
     imagePath: '/samples/tomato_early_blight.jpg',
-    label: 'Tomato Foliage',
-    hint: 'Alternaria solani concentric leaf spots',
+    label: 'Tomato Leaf',
+    hint: 'Alternaria solani concentric target spots',
   },
   {
     id: 'sample-potato-blight',
@@ -27,8 +27,8 @@ export const REAL_SAMPLE_LEAVES: RealSampleLeaf[] = [
     id: 'sample-corn-rust',
     cropName: 'Maize / Corn',
     imagePath: '/samples/corn_common_rust.jpg',
-    label: 'Corn Leaf',
-    hint: 'Puccinia sorghi cinnamon pustules',
+    label: 'Corn / Maize Leaf',
+    hint: 'Puccinia sorghi cinnamon rust pustules',
   },
 ];
 

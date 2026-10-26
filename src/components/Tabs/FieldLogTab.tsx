@@ -9,15 +9,16 @@ import {
   Trash2,
   Check,
   Leaf,
+  RotateCcw,
 } from 'lucide-react';
 import { BOUNCY_SPRING } from '../../theme';
 import { useApp } from '../../context/AppContext';
-import { getSeverityStyle } from '../../utils/storage';
+import { getSeverityStyle, DEFAULT_INDIAN_SCANS } from '../../utils/storage';
 import { shareDiagnosisResult } from '../../utils/diagnosis';
 import { ActionPlanCard } from '../Cards/ActionPlanCard';
 
 export const FieldLogTab: React.FC = () => {
-  const { language, scans, clearScans, setActiveTab } = useApp();
+  const { language, scans, addScan, clearScans, setActiveTab } = useApp();
   const [expandedScanId, setExpandedScanId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -100,20 +101,38 @@ export const FieldLogTab: React.FC = () => {
           <p className="text-sm sm:text-base text-[#648078]">{copy.subtitle}</p>
         </div>
 
-        {scans.length > 0 && (
+        <div className="flex items-center gap-2">
           <button
             onClick={() => {
-              if (window.confirm('Clear all historical field records?')) {
-                clearScans();
-              }
+              DEFAULT_INDIAN_SCANS.forEach((s) => {
+                if (!scans.some((existing) => existing.id === s.id)) {
+                  addScan(s);
+                }
+              });
+              showToast('Loaded sample field records');
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-[#EFF4F2]/80 text-[#648078] hover:text-[#A8423F] hover:bg-white text-xs font-semibold cursor-pointer shadow-2xs"
-            title="Clear all logs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-[#EFF4F2]/80 text-[#34796E] hover:bg-white text-xs font-semibold cursor-pointer shadow-2xs"
+            title="Load realistic field inspection logs"
           >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>Clear</span>
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Sample Records</span>
           </button>
-        )}
+
+          {scans.length > 0 && (
+            <button
+              onClick={() => {
+                if (window.confirm('Clear all historical field records?')) {
+                  clearScans();
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-[#EFF4F2]/80 text-[#648078] hover:text-[#A8423F] hover:bg-white text-xs font-semibold cursor-pointer shadow-2xs"
+              title="Clear all logs"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Clear</span>
+            </button>
+          )}
+        </div>
       </motion.div>
 
       {/* Field Log Listing or Empty State */}
@@ -131,16 +150,28 @@ export const FieldLogTab: React.FC = () => {
             <div className="space-y-1">
               <h2 className="text-base font-semibold text-[#203A37]">No logs recorded yet</h2>
               <p className="text-xs sm:text-sm text-[#648078] max-w-sm">
-                Complete a leaf scan or try one of the samples on the Scan tab to automatically log diagnoses and actionable recovery plans here.
+                Complete a leaf scan or load authentic field inspections (Rice, Cotton, Mustard, Wheat, Tomato) with IPM recovery plans.
               </p>
             </div>
 
-            <button
-              onClick={() => setActiveTab('scan')}
-              className="px-4 py-2 rounded-xl bg-[#34796E] text-[#EFF4F2] text-xs font-semibold hover:bg-[#2c655c] cursor-pointer shadow-xs"
-            >
-              Go to Scan tab
-            </button>
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                onClick={() => {
+                  DEFAULT_INDIAN_SCANS.forEach((s) => addScan(s));
+                  showToast('Loaded sample records');
+                }}
+                className="px-4 py-2 rounded-xl bg-[#34796E] text-[#EFF4F2] text-xs font-semibold hover:bg-[#2c655c] cursor-pointer shadow-xs"
+              >
+                Load Sample Records
+              </button>
+
+              <button
+                onClick={() => setActiveTab('scan')}
+                className="px-4 py-2 rounded-xl border border-white/80 bg-[#EFF4F2]/80 text-[#203A37] text-xs font-semibold hover:bg-[#EFF4F2] cursor-pointer"
+              >
+                Go to Scan Tab
+              </button>
+            </div>
           </div>
         ) : (
           <div className="space-y-3">
@@ -163,9 +194,9 @@ export const FieldLogTab: React.FC = () => {
                     onClick={() => setExpandedScanId(isExpanded ? null : scan.id)}
                     className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer hover:bg-[#EFF4F2] select-none"
                   >
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-3.5 min-w-0">
                       {scan.imageThumbnail ? (
-                        <div className="w-12 h-12 rounded-xl overflow-hidden bg-white shrink-0 border border-white/80 shadow-2xs">
+                        <div className="w-14 h-14 rounded-2xl overflow-hidden bg-white shrink-0 border border-white/80 shadow-2xs">
                           <img
                             src={scan.imageThumbnail}
                             alt={scan.cropName}
@@ -173,14 +204,22 @@ export const FieldLogTab: React.FC = () => {
                           />
                         </div>
                       ) : (
-                        <div className="w-12 h-12 rounded-xl bg-[#34796E]/10 flex items-center justify-center text-[#34796E] shrink-0">
-                          <Leaf className="w-5 h-5" />
+                        <div className="w-14 h-14 rounded-2xl bg-[#34796E]/10 flex items-center justify-center text-[#34796E] shrink-0">
+                          <Leaf className="w-6 h-6" />
                         </div>
                       )}
 
-                      <div className="min-w-0">
-                        <div className="text-sm font-bold text-[#203A37] truncate">
-                          {scan.cropName} — {scan.conditionName}
+                      <div className="min-w-0 space-y-0.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs sm:text-sm font-bold text-[#203A37]">
+                            {scan.cropName}
+                          </span>
+                          <span className="text-[10px] font-semibold text-[#34796E] bg-[#34796E]/12 px-2 py-0.5 rounded-md">
+                            Leaf Foliage
+                          </span>
+                        </div>
+                        <div className="text-xs font-semibold text-[#648078]">
+                          {scan.conditionName}
                         </div>
                         <div className="text-xs text-[#648078] truncate max-w-md">
                           {scan.shortSummary}

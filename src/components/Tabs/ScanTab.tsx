@@ -7,8 +7,6 @@ import {
   Sparkles,
   ArrowRight,
   Leaf,
-  Video,
-  X,
   AlertTriangle,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
@@ -25,14 +23,18 @@ import { ActionPlanCard } from '../Cards/ActionPlanCard';
 
 const COMMON_CROPS = [
   'Auto-Detect',
-  'Tomato',
-  'Potato',
-  'Maize / Corn',
-  'Rice',
+  'Rice / Paddy',
   'Wheat',
   'Cotton',
-  'Chili / Pepper',
+  'Tomato',
+  'Chilli / Pepper',
+  'Mustard',
+  'Potato',
+  'Sugarcane',
+  'Maize / Corn',
   'Soybean',
+  'Turmeric',
+  'Chickpea / Gram',
 ];
 
 export const ScanTab: React.FC = () => {
@@ -44,12 +46,6 @@ export const ScanTab: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [dragActive, setDragActive] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  // Live Camera Stream State
-  const [isStreaming, setIsStreaming] = useState<boolean>(false);
-  const [cameraError, setCameraError] = useState<string | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
@@ -74,64 +70,6 @@ export const ScanTab: React.FC = () => {
   };
 
   const copy = titles[language] || titles.en;
-
-  // Cleanup stream on unmount
-  useEffect(() => {
-    return () => {
-      stopCameraStream();
-    };
-  }, []);
-
-  const stopCameraStream = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-    setIsStreaming(false);
-  };
-
-  const startCameraStream = async () => {
-    setErrorMsg(null);
-    setCameraError(null);
-    try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Camera stream not supported in this browser environment.');
-      }
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: false,
-      });
-
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play().catch(() => {});
-      }
-      setIsStreaming(true);
-    } catch (err: any) {
-      console.warn('Live camera error, falling back to camera input:', err);
-      setCameraError('Camera stream unavailable. Please use Take Photo or Upload File.');
-      setIsStreaming(false);
-      // Trigger native camera input
-      cameraInputRef.current?.click();
-    }
-  };
-
-  const captureFromStream = () => {
-    if (!videoRef.current) return;
-    const video = videoRef.current;
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-
-    setSelectedImage(dataUrl);
-    stopCameraStream();
-  };
 
   const handleFile = (file: File) => {
     setErrorMsg(null);
@@ -178,7 +116,6 @@ export const ScanTab: React.FC = () => {
   const handleLoadSample = async (sample: RealSampleLeaf) => {
     setErrorMsg(null);
     setSelectedCrop(sample.cropName);
-    stopCameraStream();
 
     try {
       const res = await fetch(sample.imagePath);
@@ -310,7 +247,6 @@ export const ScanTab: React.FC = () => {
   };
 
   const handleResetScan = () => {
-    stopCameraStream();
     setSelectedImage(null);
     setLatestDiagnosis(null);
     setErrorMsg(null);
@@ -472,7 +408,7 @@ export const ScanTab: React.FC = () => {
                   '0 8px 24px -4px rgba(52, 121, 110, 0.08)',
                 ],
               }}
-              transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+              transition={{ type: 'tween', duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
               className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-3xl overflow-hidden border-2 border-[#34796E]/50 bg-[#DDEBE5]/60 flex items-center justify-center"
             >
               {/* Corner Viewfinder Accents */}
@@ -487,7 +423,7 @@ export const ScanTab: React.FC = () => {
                   src={selectedImage}
                   alt="Crop foliage being analyzed"
                   animate={{ scale: [1, 1.03, 1] }}
-                  transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+                  transition={{ type: 'tween', duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
                   className="w-full h-full object-cover filter brightness-95"
                 />
               ) : (
@@ -497,7 +433,7 @@ export const ScanTab: React.FC = () => {
               {/* Sweeping scan laser bar */}
               <motion.div
                 animate={{ y: [-105, 105, -105] }}
-                transition={{ duration: 2.0, repeat: Infinity, ease: 'easeInOut' }}
+                transition={{ type: 'tween', duration: 2.0, repeat: Infinity, ease: 'easeInOut' }}
                 className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#34796E] to-transparent shadow-[0_0_14px_#34796E] z-10"
               />
             </motion.div>
@@ -512,7 +448,7 @@ export const ScanTab: React.FC = () => {
                 <span className="relative flex h-3 w-3 items-center justify-center">
                   <motion.span
                     animate={{ scale: [1, 2.3], opacity: [0.75, 0] }}
-                    transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
+                    transition={{ type: 'tween', duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
                     className="absolute inline-flex h-full w-full rounded-full bg-[#34796E]"
                   />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#34796E]" />
@@ -525,7 +461,7 @@ export const ScanTab: React.FC = () => {
 
               <motion.h2
                 animate={{ opacity: [0.82, 1, 0.82] }}
-                transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+                transition={{ type: 'tween', duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
                 className="text-lg sm:text-xl font-bold text-[#203A37]"
               >
                 Diagnosing Foliar Health
@@ -533,7 +469,7 @@ export const ScanTab: React.FC = () => {
 
               <motion.p
                 animate={{ opacity: [0.65, 0.95, 0.65] }}
-                transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+                transition={{ type: 'tween', duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
                 className="text-xs sm:text-sm text-[#648078] leading-relaxed"
               >
                 Identifying pathogen type, urgency level, and IPM recovery plan...
@@ -542,14 +478,14 @@ export const ScanTab: React.FC = () => {
               <div className="w-48 sm:w-60 h-1.5 rounded-full bg-[#EFF4F2] overflow-hidden relative border border-white/60 mt-1">
                 <motion.div
                   animate={{ x: ['-100%', '100%'] }}
-                  transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+                  transition={{ type: 'tween', duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
                   className="w-1/2 h-full bg-gradient-to-r from-transparent via-[#34796E] to-transparent rounded-full"
                 />
               </div>
             </div>
           </motion.div>
         ) : (
-          /* State 3: Prominent Stylized Capture Area & Live Video Preview */
+          /* State 3: Prominent Stylized Capture Area & Direct Photo Upload */
           <motion.div
             key="capture-area"
             initial={{ opacity: 0, y: 16 }}
@@ -558,210 +494,136 @@ export const ScanTab: React.FC = () => {
             transition={BOUNCY_SPRING}
             className="space-y-6"
           >
-            {/* Live Camera Stream Mode */}
-            {isStreaming ? (
-              <div className="sylva-card p-6 sm:p-8 flex flex-col items-center justify-center space-y-4">
-                <div className="relative w-full max-w-lg aspect-4/3 rounded-2xl overflow-hidden bg-black border-2 border-[#34796E] shadow-lg">
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-full h-full object-cover"
-                  />
+            {/* Drop / Capture Zone */}
+            <div
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+              className={`relative sylva-card p-8 sm:p-12 border-2 border-dashed transition-all duration-200 text-center flex flex-col items-center justify-center select-none ${
+                dragActive
+                  ? 'border-[#34796E] bg-[#DDEBE5]/90 scale-[1.01]'
+                  : 'border-[#A5C9BC]/60 hover:border-[#34796E]/60'
+              }`}
+            >
+              {/* Four Viewfinder Corner Accents */}
+              <div className="absolute top-4 left-4 w-5 h-5 border-t-2 border-l-2 border-[#34796E] rounded-tl-md pointer-events-none" />
+              <div className="absolute top-4 right-4 w-5 h-5 border-t-2 border-r-2 border-[#34796E] rounded-tr-md pointer-events-none" />
+              <div className="absolute bottom-4 left-4 w-5 h-5 border-b-2 border-l-2 border-[#34796E] rounded-bl-md pointer-events-none" />
+              <div className="absolute bottom-4 right-4 w-5 h-5 border-b-2 border-r-2 border-[#34796E] rounded-br-md pointer-events-none" />
 
-                  {/* Corner Viewfinder Overlays */}
-                  <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-[#EFF4F2] pointer-events-none" />
-                  <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-[#EFF4F2] pointer-events-none" />
-                  <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-[#EFF4F2] pointer-events-none" />
-                  <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-[#EFF4F2] pointer-events-none" />
+              {selectedImage ? (
+                /* Selected Preview State */
+                <div className="space-y-5 max-w-md w-full">
+                  <div className="relative w-44 h-44 sm:w-52 sm:h-52 mx-auto rounded-2xl overflow-hidden border-2 border-white/90 shadow-md bg-[#EFF4F2]">
+                    <img
+                      src={selectedImage}
+                      alt="Crop foliage preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
 
-                  {/* Close camera button */}
-                  <button
-                    onClick={stopCameraStream}
-                    className="absolute top-3 right-3 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 cursor-pointer backdrop-blur-md"
-                    title="Close camera"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
+                  <div className="space-y-1">
+                    <h3 className="text-base font-semibold text-[#203A37]">
+                      Leaf photo ready
+                    </h3>
+                    <p className="text-xs text-[#648078]">
+                      Clear view of spots, discoloration, or pustules.
+                    </p>
+                  </div>
 
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/50 text-[#EFF4F2] text-xs backdrop-blur-md">
-                    Align leaf symptoms in view
+                  {/* Crop Selector */}
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-1">
+                    <label htmlFor="crop-select" className="text-xs font-semibold text-[#648078]">
+                      Crop:
+                    </label>
+                    <select
+                      id="crop-select"
+                      value={selectedCrop}
+                      onChange={(e) => setSelectedCrop(e.target.value)}
+                      className="px-3 py-1.5 rounded-xl border border-white/80 bg-[#EFF4F2]/90 text-xs font-semibold text-[#203A37] focus:outline-none focus:ring-2 focus:ring-[#34796E]/40 cursor-pointer shadow-2xs max-w-full"
+                    >
+                      {COMMON_CROPS.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex items-center justify-center gap-3 pt-2">
+                    <motion.button
+                      onClick={() => setSelectedImage(null)}
+                      whileHover={{ y: -1 }}
+                      whileTap={{ scale: 0.96 }}
+                      transition={BOUNCY_SPRING}
+                      className="px-4 py-2.5 rounded-xl border border-white/80 bg-[#EFF4F2]/80 text-[#203A37] text-xs font-medium hover:bg-[#EFF4F2] cursor-pointer"
+                    >
+                      Change photo
+                    </motion.button>
+
+                    <motion.button
+                      onClick={handleStartAnalysis}
+                      whileHover={{ y: -2 }}
+                      whileTap={{ scale: 0.96 }}
+                      transition={BOUNCY_SPRING}
+                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#34796E] text-[#EFF4F2] text-xs font-semibold shadow-[0_6px_20px_rgba(52,121,110,0.22)] hover:bg-[#2c655c] cursor-pointer"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Diagnose Now</span>
+                    </motion.button>
                   </div>
                 </div>
+              ) : (
+                /* Empty Capture Area */
+                <div className="space-y-4 max-w-md">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-[#34796E]/12 border border-[#34796E]/20 flex items-center justify-center text-[#34796E] mx-auto shadow-xs">
+                    <Camera className="w-8 h-8 sm:w-10 sm:h-10" />
+                  </div>
 
-                <div className="flex items-center gap-3 pt-2">
-                  <motion.button
-                    onClick={stopCameraStream}
-                    whileHover={{ y: -1 }}
-                    whileTap={{ scale: 0.96 }}
-                    transition={BOUNCY_SPRING}
-                    className="px-4 py-2.5 rounded-xl border border-white/80 bg-[#EFF4F2]/80 text-[#203A37] text-xs font-semibold hover:bg-[#EFF4F2] cursor-pointer"
-                  >
-                    Cancel
-                  </motion.button>
+                  <div className="space-y-1">
+                    <h2 className="text-lg sm:text-xl font-bold text-[#203A37]">
+                      Photograph or upload leaf photo
+                    </h2>
+                    <p className="text-xs sm:text-sm text-[#648078] max-w-sm mx-auto">
+                      Snap a leaf photo with your device camera or upload an existing image from your gallery for instant diagnosis.
+                    </p>
+                  </div>
 
-                  <motion.button
-                    onClick={captureFromStream}
-                    whileHover={{ y: -2 }}
-                    whileTap={{ scale: 0.96 }}
-                    transition={BOUNCY_SPRING}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#34796E] text-[#EFF4F2] text-sm font-semibold shadow-md hover:bg-[#2c655c] cursor-pointer"
-                  >
-                    <Camera className="w-4 h-4" />
-                    <span>Capture Photo</span>
-                  </motion.button>
+                  {/* Trigger Buttons: Snap Photo & Upload */}
+                  <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                    <motion.button
+                      onClick={() => cameraInputRef.current?.click()}
+                      whileHover={{ y: -2 }}
+                      whileTap={{ scale: 0.96 }}
+                      transition={BOUNCY_SPRING}
+                      className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#34796E] text-[#EFF4F2] font-semibold text-sm shadow-[0_6px_20px_rgba(52,121,110,0.24)] hover:bg-[#2c655c] cursor-pointer"
+                    >
+                      <Camera className="w-4 h-4" />
+                      <span>Snap Leaf Photo</span>
+                    </motion.button>
+
+                    <motion.button
+                      onClick={() => fileInputRef.current?.click()}
+                      whileHover={{ y: -2 }}
+                      whileTap={{ scale: 0.96 }}
+                      transition={BOUNCY_SPRING}
+                      className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-white/80 bg-[#EFF4F2]/80 text-[#203A37] font-semibold text-sm hover:border-[#34796E]/40 hover:bg-[#EFF4F2] cursor-pointer shadow-xs"
+                    >
+                      <UploadCloud className="w-4 h-4 text-[#34796E]" />
+                      <span>Upload From Files</span>
+                    </motion.button>
+                  </div>
+
+                  {errorMsg && (
+                    <div className="text-xs font-medium text-[#A8423F] pt-2">
+                      {errorMsg}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ) : (
-              /* Drop / Capture Zone */
-              <div
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-                className={`relative sylva-card p-8 sm:p-12 border-2 border-dashed transition-all duration-200 text-center flex flex-col items-center justify-center select-none ${
-                  dragActive
-                    ? 'border-[#34796E] bg-[#DDEBE5]/90 scale-[1.01]'
-                    : 'border-[#A5C9BC]/60 hover:border-[#34796E]/60'
-                }`}
-              >
-                {/* Four Viewfinder Corner Accents */}
-                <div className="absolute top-4 left-4 w-5 h-5 border-t-2 border-l-2 border-[#34796E] rounded-tl-md pointer-events-none" />
-                <div className="absolute top-4 right-4 w-5 h-5 border-t-2 border-r-2 border-[#34796E] rounded-tr-md pointer-events-none" />
-                <div className="absolute bottom-4 left-4 w-5 h-5 border-b-2 border-l-2 border-[#34796E] rounded-bl-md pointer-events-none" />
-                <div className="absolute bottom-4 right-4 w-5 h-5 border-b-2 border-r-2 border-[#34796E] rounded-br-md pointer-events-none" />
-
-                {selectedImage ? (
-                  /* Selected Preview State */
-                  <div className="space-y-5 max-w-md w-full">
-                    <div className="relative w-44 h-44 sm:w-52 sm:h-52 mx-auto rounded-2xl overflow-hidden border-2 border-white/90 shadow-md bg-[#EFF4F2]">
-                      <img
-                        src={selectedImage}
-                        alt="Crop foliage preview"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <h3 className="text-base font-semibold text-[#203A37]">
-                        Leaf photo ready
-                      </h3>
-                      <p className="text-xs text-[#648078]">
-                        Clear view of spots, discoloration, or pustules.
-                      </p>
-                    </div>
-
-                    {/* Crop Selector */}
-                    <div className="flex items-center justify-center gap-2 pt-1">
-                      <label htmlFor="crop-select" className="text-xs font-medium text-[#648078]">
-                        Crop:
-                      </label>
-                      <select
-                        id="crop-select"
-                        value={selectedCrop}
-                        onChange={(e) => setSelectedCrop(e.target.value)}
-                        className="px-3 py-1.5 rounded-xl border border-white/80 bg-[#EFF4F2]/90 text-xs font-semibold text-[#203A37] focus:outline-none focus:ring-2 focus:ring-[#34796E]/40 cursor-pointer shadow-2xs"
-                      >
-                        {COMMON_CROPS.map((c) => (
-                          <option key={c} value={c}>
-                            {c}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Action buttons */}
-                    <div className="flex items-center justify-center gap-3 pt-2">
-                      <motion.button
-                        onClick={() => setSelectedImage(null)}
-                        whileHover={{ y: -1 }}
-                        whileTap={{ scale: 0.96 }}
-                        transition={BOUNCY_SPRING}
-                        className="px-4 py-2.5 rounded-xl border border-white/80 bg-[#EFF4F2]/80 text-[#203A37] text-xs font-medium hover:bg-[#EFF4F2] cursor-pointer"
-                      >
-                        Change photo
-                      </motion.button>
-
-                      <motion.button
-                        onClick={handleStartAnalysis}
-                        whileHover={{ y: -2 }}
-                        whileTap={{ scale: 0.96 }}
-                        transition={BOUNCY_SPRING}
-                        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#34796E] text-[#EFF4F2] text-xs font-semibold shadow-[0_6px_20px_rgba(52,121,110,0.22)] hover:bg-[#2c655c] cursor-pointer"
-                      >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>Diagnose Now</span>
-                      </motion.button>
-                    </div>
-                  </div>
-                ) : (
-                  /* Empty Capture Area */
-                  <div className="space-y-4 max-w-md">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-[#34796E]/12 border border-[#34796E]/20 flex items-center justify-center text-[#34796E] mx-auto shadow-xs">
-                      <Camera className="w-8 h-8 sm:w-10 sm:h-10" />
-                    </div>
-
-                    <div className="space-y-1">
-                      <h2 className="text-lg sm:text-xl font-bold text-[#203A37]">
-                        Capture or upload leaf photo
-                      </h2>
-                      <p className="text-xs sm:text-sm text-[#648078] max-w-sm mx-auto">
-                        Take a photo, preview live video stream, or drag and drop a leaf image for diagnosis.
-                      </p>
-                    </div>
-
-                    {/* Trigger Buttons: Live Video Stream, Take Photo & Upload */}
-                    <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                      <motion.button
-                        onClick={startCameraStream}
-                        whileHover={{ y: -2 }}
-                        whileTap={{ scale: 0.96 }}
-                        transition={BOUNCY_SPRING}
-                        className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#34796E] text-[#EFF4F2] font-semibold text-sm shadow-[0_6px_20px_rgba(52,121,110,0.24)] hover:bg-[#2c655c] cursor-pointer"
-                      >
-                        <Video className="w-4 h-4" />
-                        <span>Live Camera</span>
-                      </motion.button>
-
-                      <motion.button
-                        onClick={() => cameraInputRef.current?.click()}
-                        whileHover={{ y: -2 }}
-                        whileTap={{ scale: 0.96 }}
-                        transition={BOUNCY_SPRING}
-                        className="inline-flex items-center gap-2 px-4 py-3 rounded-2xl border border-white/80 bg-[#EFF4F2]/80 text-[#203A37] font-semibold text-sm hover:border-[#34796E]/40 hover:bg-[#EFF4F2] cursor-pointer shadow-xs"
-                      >
-                        <Camera className="w-4 h-4 text-[#34796E]" />
-                        <span>Snap Photo</span>
-                      </motion.button>
-
-                      <motion.button
-                        onClick={() => fileInputRef.current?.click()}
-                        whileHover={{ y: -2 }}
-                        whileTap={{ scale: 0.96 }}
-                        transition={BOUNCY_SPRING}
-                        className="inline-flex items-center gap-2 px-4 py-3 rounded-2xl border border-white/80 bg-[#EFF4F2]/80 text-[#203A37] font-semibold text-sm hover:border-[#34796E]/40 hover:bg-[#EFF4F2] cursor-pointer shadow-xs"
-                      >
-                        <UploadCloud className="w-4 h-4 text-[#34796E]" />
-                        <span>Upload File</span>
-                      </motion.button>
-                    </div>
-
-                    {cameraError && (
-                      <div className="text-xs font-medium text-[#C0772C] pt-2">
-                        {cameraError}
-                      </div>
-                    )}
-
-                    {errorMsg && (
-                      <div className="text-xs font-medium text-[#A8423F] pt-2">
-                        {errorMsg}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+              )}
+            </div>
 
             {/* "Try a sample" row of 3 real leaf photos from /public/samples */}
             <div className="space-y-3 pt-2">
