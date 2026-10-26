@@ -25,17 +25,23 @@ export const LIGHT_THEME = {
 } as const;
 
 export const DARK_THEME = {
-  background: '#101B19',
-  secondaryBackground: '#172724',
-  primaryGlassSurface: '#213632',
-  elevatedGlassSurface: '#2A413B',
+  background: '#151622',
+  secondaryBackground: '#24273C',
+  primaryGlassSurface: 'rgba(35, 37, 54, 0.56)',
+  elevatedGlassSurface: 'rgba(43, 46, 65, 0.76)',
   mainText: '#E6F0EB',
   secondaryText: '#A0B8AD',
+  mutedText: '#879BA0',
   primaryAccent: '#9AD5C1',
   secondaryAccent: '#70B9A3',
   buttonTextOnMint: '#142823',
-  glassBorders: 'rgba(181, 215, 200, 0.22)',
-  shadows: 'rgba(0, 0, 0, 0.55)',
+  glassBorders: 'rgba(218, 230, 235, 0.13)',
+  glassBordersHighlight: 'rgba(226, 236, 240, 0.21)',
+  shadows: 'rgba(0, 0, 0, 0.22)',
+  glowPurple: '#35304D',
+  glowTeal: '#155A63',
+  glowPlum: '#493047',
+  midnightBlue: '#142B35',
 } as const;
 
 // Framer Motion spring presets as specified in prompt:

@@ -27,29 +27,31 @@
 }
 
 html.dark {
-  /* Dark Theme: Midnight Sylva */
-  --bg-app: #101B19;
-  --bg-secondary: #172724;
+  /* Dark Theme: Midnight Gradient Liquid Glass */
+  --bg-app: #151622;
+  --bg-secondary: #24273C;
   --surface-highlight: #9AD5C1;
   --primary-teal: #9AD5C1;
   --primary-accent: #9AD5C1;
   --secondary-accent: #70B9A3;
   --text-primary: #E6F0EB;
   --text-secondary: #A0B8AD;
+  --text-muted: #879BA0;
   --text-on-accent: #142823;
 
-  /* Liquid Glass Surfaces: translucent #213632 and #2A413B */
-  --surface-glass: rgba(33, 54, 50, 0.76);
-  --surface-glass-elevated: rgba(42, 65, 59, 0.88);
-  --glass-border: rgba(181, 215, 200, 0.22);
-  --glass-border-subtle: rgba(181, 215, 200, 0.15);
-  --glass-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.55), 0 4px 12px -2px rgba(0, 0, 0, 0.35);
-  --glass-shadow-elevated: 0 20px 42px -6px rgba(0, 0, 0, 0.7), 0 8px 18px -4px rgba(0, 0, 0, 0.45);
+  /* Translucent charcoal and indigo-tinted liquid-glass surfaces */
+  --surface-glass: rgba(35, 37, 54, 0.56);
+  --surface-glass-elevated: rgba(43, 46, 65, 0.76);
+  --glass-border: rgba(218, 230, 235, 0.13);
+  --glass-border-subtle: rgba(218, 230, 235, 0.08);
+  --glass-border-highlight: rgba(226, 236, 240, 0.21);
+  --glass-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.22), 0 4px 12px -2px rgba(0, 0, 0, 0.18);
+  --glass-shadow-elevated: 0 18px 40px -6px rgba(0, 0, 0, 0.25), 0 6px 16px -4px rgba(0, 0, 0, 0.2);
 
   /* Status Colors with accessible contrast on dark glass */
   --status-good: #9AD5C1;
-  --status-marginal: #E29C52;
-  --status-poor: #E26E68;
+  --status-marginal: #D89B56;
+  --status-poor: #D96964;
 }
 
 @theme {
@@ -78,13 +80,13 @@ body {
   min-height: 100vh;
   margin: 0;
   overflow-x: hidden;
-  transition: background-color 250ms cubic-bezier(0.16, 1, 0.3, 1), color 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 220ms cubic-bezier(0.16, 1, 0.3, 1), color 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* 200–300ms smooth theme color transitions */
+/* 220ms smooth theme color transitions */
 div, header, aside, nav, main, button, input, select, textarea, p, span, h1, h2, h3, h4 {
   transition-property: background-color, border-color, color, fill, stroke, box-shadow;
-  transition-duration: 250ms;
+  transition-duration: 220ms;
   transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -100,11 +102,22 @@ div, header, aside, nav, main, button, input, select, textarea, p, span, h1, h2,
   font-feature-settings: "tnum";
 }
 
-/* Liquid Glass Cards */
+/* Atmospheric Midnight Gradient Background Layer */
+.sylva-midnight-bg {
+  background-color: #151622;
+  background-image: 
+    radial-gradient(circle at 18% 12%, rgba(53, 48, 77, 0.44) 0%, rgba(53, 48, 77, 0.14) 38%, transparent 66%),
+    radial-gradient(circle at 50% 90%, rgba(21, 90, 99, 0.38) 0%, rgba(21, 90, 99, 0.12) 46%, transparent 72%),
+    radial-gradient(circle at 86% 42%, rgba(73, 48, 71, 0.32) 0%, rgba(73, 48, 71, 0.08) 36%, transparent 64%),
+    linear-gradient(160deg, #151622 0%, #24273C 52%, #142B35 100%);
+  background-attachment: fixed;
+}
+
+/* Liquid Glass Cards (20–24px blur) */
 .sylva-card {
   background-color: var(--surface-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
   border-radius: 1.25rem;
@@ -112,8 +125,8 @@ div, header, aside, nav, main, button, input, select, textarea, p, span, h1, h2,
 
 .sylva-card-elevated {
   background-color: var(--surface-glass-elevated);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow-elevated);
   border-radius: 1.5rem;

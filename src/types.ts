@@ -13,6 +13,27 @@ export interface TreatmentPlan {
   safeIntervalDays?: number;
 }
 
+export interface PathologyLesionZone {
+  id: string;
+  xPct: number;
+  yPct: number;
+  radiusPct: number;
+  intensity: number;
+  zoneName: string;
+  description: string;
+  severity: SeverityLevel;
+}
+
+export interface FoliarAnalysis {
+  damagePercentage: number;
+  chlorosisPercentage: number;
+  necrosisPercentage: number;
+  healthyPercentage: number;
+  lesionClusters: PathologyLesionZone[];
+  primaryPathogenStrain?: string;
+  sporulationRisk: 'low' | 'moderate' | 'high';
+}
+
 export interface DiagnosisRecord {
   id: string;
   cropName: string;
@@ -30,6 +51,7 @@ export interface DiagnosisRecord {
   completedSteps?: Record<string, boolean>;
   imageUrl?: string;
   createdAt: string;
+  foliarAnalysis?: FoliarAnalysis;
 }
 
 export interface WeatherCondition {

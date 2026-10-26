@@ -21,6 +21,7 @@ export const FieldLogTab: React.FC = () => {
   const { language, scans, addScan, clearScans, setActiveTab } = useApp();
   const [expandedScanId, setExpandedScanId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [confirmingClear, setConfirmingClear] = useState<boolean>(false);
 
   const titles: Record<string, { title: string; subtitle: string }> = {
     en: {
@@ -119,18 +120,41 @@ export const FieldLogTab: React.FC = () => {
           </button>
 
           {scans.length > 0 && (
-            <button
-              onClick={() => {
-                if (window.confirm('Clear all historical field records?')) {
-                  clearScans();
-                }
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] text-[var(--text-secondary)] hover:text-[var(--status-poor)] text-xs font-semibold cursor-pointer shadow-2xs"
-              title="Clear all logs"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Clear</span>
-            </button>
+            confirmingClear ? (
+              <div className="flex items-center gap-1.5 animate-fadeIn">
+                <button
+                  onClick={() => {
+                    clearScans();
+                    setConfirmingClear(false);
+                    showToast('Cleared all historical records');
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--status-poor)]/50 bg-[var(--status-poor)]/15 text-[var(--status-poor)] hover:bg-[var(--status-poor)]/25 text-xs font-bold cursor-pointer shadow-2xs transition-all"
+                  title="Confirm clear all logs"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Confirm Clear?</span>
+                </button>
+                <button
+                  onClick={() => setConfirmingClear(false)}
+                  className="px-2.5 py-1.5 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-medium cursor-pointer"
+                  title="Cancel"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setConfirmingClear(true);
+                  setTimeout(() => setConfirmingClear(false), 4500);
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] text-[var(--text-secondary)] hover:text-[var(--status-poor)] text-xs font-semibold cursor-pointer shadow-2xs transition-colors"
+                title="Clear all logs"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Clear</span>
+              </button>
+            )
           )}
         </div>
       </motion.div>

@@ -13,19 +13,47 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
-      // Suppress Vite dev HMR WebSocket connection errors in sandbox iframe environment
-      window.addEventListener('unhandledrejection', function(event) {
-        var msg = String(event && (event.reason && (event.reason.stack || event.reason.message) || event.reason) || '');
-        if (msg.includes('WebSocket') || msg.includes('createWebSocketModuleRunnerTransport') || msg.includes('@vite/client')) {
-          event.preventDefault();
+      // Robustly suppress Vite dev HMR / WebSocket runner connection errors in sandbox iframe environment
+      (function() {
+        function shouldIgnore(text) {
+          if (!text) return false;
+          var s = String(text);
+          return s.indexOf('WebSocket') !== -1 ||
+                 s.indexOf('createWebSocketModuleRunnerTransport') !== -1 ||
+                 s.indexOf('@vite/client') !== -1 ||
+                 s.indexOf('vite:ws') !== -1 ||
+                 s.indexOf('Failed to construct \'WebSocket\'') !== -1;
         }
-      });
-      window.addEventListener('error', function(event) {
-        var msg = String(event && (event.message || event.filename) || '');
-        if (msg.includes('WebSocket') || msg.includes('createWebSocketModuleRunnerTransport') || msg.includes('@vite/client')) {
-          event.preventDefault();
-        }
-      });
+
+        window.addEventListener('unhandledrejection', function(event) {
+          var reason = event && event.reason;
+          var msg = String((reason && (reason.stack || reason.message)) || reason || '');
+          if (shouldIgnore(msg)) {
+            event.preventDefault();
+            if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+            return true;
+          }
+        }, true);
+
+        window.addEventListener('error', function(event) {
+          var err = event && event.error;
+          var msg = String((event && (event.message || event.filename)) || (err && (err.stack || err.message)) || '');
+          if (shouldIgnore(msg)) {
+            event.preventDefault();
+            if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+            return true;
+          }
+        }, true);
+
+        var origOnError = window.onerror;
+        window.onerror = function(message, source, lineno, colno, error) {
+          var full = String(message) + ' ' + String(source) + ' ' + (error ? String(error.stack || error.message) : '');
+          if (shouldIgnore(full)) {
+            return true;
+          }
+          if (origOnError) return origOnError.apply(this, arguments);
+        };
+      })();
       // Zero-flash theme initialization for Eucalyptus Haze & Midnight Sylva
       (function() {
         try {

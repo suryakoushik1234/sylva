@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { LeafMood } from '../../types';
+import { useApp } from '../../context/AppContext';
 
 interface LivingBackgroundProps {
   leafMood?: LeafMood;
@@ -26,6 +27,7 @@ export const LivingBackground: React.FC<LivingBackgroundProps> = ({
   leafMood = 'calm',
   showNatureElements = true,
 }) => {
+  const { theme } = useApp();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
@@ -192,13 +194,18 @@ export const LivingBackground: React.FC<LivingBackgroundProps> = ({
       aria-hidden="true"
       className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none"
     >
-      {/* 1. Base Gradient matching active theme */}
-      <div
-        className="absolute inset-0 transition-colors duration-300"
-        style={{
-          background: 'linear-gradient(175deg, var(--bg-app) 0%, var(--bg-secondary) 100%)',
-        }}
-      />
+      {/* Dark Theme: Atmospheric Midnight Gradient Layer */}
+      {theme === 'dark' ? (
+        <div className="absolute inset-0 sylva-midnight-bg transition-opacity duration-300" />
+      ) : (
+        <>
+          {/* Light Theme: Base Eucalyptus Haze Gradient */}
+          <div
+            className="absolute inset-0 transition-colors duration-300"
+            style={{
+              background: 'linear-gradient(175deg, var(--bg-app) 0%, var(--bg-secondary) 100%)',
+            }}
+          />
 
       {/* 2. Slow-drifting Botanical Glows (startup page only) */}
       {!prefersReducedMotion && showNatureElements && (
@@ -396,6 +403,8 @@ export const LivingBackground: React.FC<LivingBackgroundProps> = ({
           />
         </g>
       </svg>
+      )}
+        </>
       )}
     </div>
   );

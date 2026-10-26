@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TopBar } from './Navigation/TopBar';
-import { Sidebar } from './Navigation/Sidebar';
 import { BottomTabBar } from './Navigation/BottomTabBar';
 import { ChatbotBar } from './Chat/ChatbotBar';
 import { ScanTab } from './Tabs/ScanTab';
@@ -12,12 +11,13 @@ import { BOUNCY_SPRING } from '../theme';
 
 export const AppShell: React.FC = () => {
   const { activeTab, tabDirection } = useApp();
+  const [showDemoModal, setShowDemoModal] = useState<boolean>(false);
 
   const tabVariants = {
     enter: (direction: number) => ({
-      x: direction > 0 ? 36 : direction < 0 ? -36 : 0,
+      x: direction > 0 ? 28 : direction < 0 ? -28 : 0,
       opacity: 0,
-      scale: 0.985,
+      scale: 0.99,
     }),
     center: {
       x: 0,
@@ -26,26 +26,23 @@ export const AppShell: React.FC = () => {
       transition: BOUNCY_SPRING,
     },
     exit: (direction: number) => ({
-      x: direction > 0 ? -36 : direction < 0 ? 36 : 0,
+      x: direction > 0 ? -28 : direction < 0 ? 28 : 0,
       opacity: 0,
-      scale: 0.985,
-      transition: { duration: 0.18, ease: 'easeOut' as const },
+      scale: 0.99,
+      transition: { duration: 0.16, ease: 'easeOut' as const },
     }),
   };
 
   return (
     <div className="relative min-h-screen flex flex-col z-10">
-      {/* Slim Top Bar */}
-      <TopBar />
+      {/* Top Glass Navigation Bar (Replaces left sidebar with modern dashboard header) */}
+      <TopBar onOpenDemoDeck={() => setShowDemoModal(true)} />
 
-      <div className="flex-1 flex max-w-7xl w-full mx-auto">
-        {/* Left Sidebar on desktop (>=768px) */}
-        <Sidebar />
-
-        {/* Dynamic Tab Content Area */}
+      {/* Main Full-Width Dashboard Container */}
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 md:px-8 py-5 sm:py-7">
         <main
           id="main-tab-content"
-          className="flex-1 p-4 sm:p-6 md:p-8 pb-36 md:pb-28 overflow-x-hidden min-w-0"
+          className="w-full pb-32 md:pb-24 overflow-x-hidden min-w-0"
         >
           <AnimatePresence mode="wait" custom={tabDirection}>
             <motion.div
@@ -57,7 +54,12 @@ export const AppShell: React.FC = () => {
               exit="exit"
               className="w-full"
             >
-              {activeTab === 'scan' && <ScanTab />}
+              {activeTab === 'scan' && (
+                <ScanTab
+                  showDemoPresetsModal={showDemoModal}
+                  onCloseDemoPresetsModal={() => setShowDemoModal(false)}
+                />
+              )}
               {activeTab === 'weather' && <WeatherTab />}
               {activeTab === 'field-log' && <FieldLogTab />}
             </motion.div>
