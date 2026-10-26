@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import {
   AppContextType,
   DiagnosisRecord,
+  EvaluatedSprayWindow,
   LeafMood,
   ScanHistoryItem,
   WeatherCondition,
@@ -11,7 +12,9 @@ import {
   calculateTabDirection,
   getStoredHasEnteredApp,
   loadStoredScans,
+  loadStoredStepTicks,
   saveStoredScans,
+  saveStoredStepTicks,
   setStoredHasEnteredApp,
   STORAGE_KEYS,
 } from '../utils/storage';
@@ -46,7 +49,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [leafMood, setLeafMood] = useState<LeafMood>('calm');
   const [latestDiagnosis, setLatestDiagnosis] = useState<DiagnosisRecord | null>(null);
   const [weather, setWeather] = useState<WeatherCondition | null>(null);
+  const [evaluatedSprayWindow, setEvaluatedSprayWindow] = useState<EvaluatedSprayWindow | null>(null);
   const [scans, setScans] = useState<ScanHistoryItem[]>(() => loadStoredScans());
+  const [stepTicks, setStepTicks] = useState<Record<string, Record<string, boolean>>>(() =>
+    loadStoredStepTicks()
+  );
+
+  // Floating Chatbot State
+  const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
 
   const setLanguage = (lang: SupportedLanguage) => {
     setLanguageState(lang);
@@ -85,6 +95,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const clearScans = () => {
     setScans([]);
     saveStoredScans([]);
+    setStepTicks({});
+    saveStoredStepTicks({});
+  };
+
+  const toggleStepCompletion = (scanId: string, stepKey: string) => {
+    setStepTicks((prev) => {
+      const currentScanTicks = prev[scanId] || {};
+      const updatedScanTicks = {
+        ...currentScanTicks,
+        [stepKey]: !currentScanTicks[stepKey],
+      };
+      const updatedAll = {
+        ...prev,
+        [scanId]: updatedScanTicks,
+      };
+      saveStoredStepTicks(updatedAll);
+      return updatedAll;
+    });
+  };
+
+  const getCompletedSteps = (scanId: string): Record<string, boolean> => {
+    return stepTicks[scanId] || {};
+  };
+
+  const openChatWithPrompt = (_prompt?: string) => {
+    setIsChatOpen(true);
   };
 
   // Sync to localStorage
@@ -104,14 +140,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setLatestDiagnosis,
         weather,
         setWeather,
+        evaluatedSprayWindow,
+        setEvaluatedSprayWindow,
         scans,
         addScan,
         clearScans,
+        toggleStepCompletion,
+        getCompletedSteps,
         leafMood,
         setLeafMood,
         hasEnteredApp,
         enterApp,
         returnToLanding,
+        isChatOpen,
+        setIsChatOpen,
+        openChatWithPrompt,
       }}
     >
       {children}

@@ -1,10 +1,11 @@
-import { ScanHistoryItem, SeverityLevel } from '../types';
+import { ScanHistoryItem, SeverityLevel, UrgencyLevel } from '../types';
 import { TabType } from '../theme';
 
 export const STORAGE_KEYS = {
   HAS_ENTERED_APP: 'sylva_has_entered_app_v1',
   SCANS: 'sylva_scans_history_v1',
   LANGUAGE: 'sylva_preferred_language_v1',
+  STEP_TICKS: 'sylva_step_ticks_v1',
 } as const;
 
 export function getStoredHasEnteredApp(storage?: Storage): boolean {
@@ -53,6 +54,31 @@ export function saveStoredScans(scans: ScanHistoryItem[], storage?: Storage): vo
   }
 }
 
+export function loadStoredStepTicks(storage?: Storage): Record<string, Record<string, boolean>> {
+  try {
+    const s = storage ?? (typeof window !== 'undefined' ? window.localStorage : undefined);
+    if (!s) return {};
+    const raw = s.getItem(STORAGE_KEYS.STEP_TICKS);
+    if (!raw) return {};
+    return JSON.parse(raw) || {};
+  } catch {
+    return {};
+  }
+}
+
+export function saveStoredStepTicks(
+  ticks: Record<string, Record<string, boolean>>,
+  storage?: Storage
+): void {
+  try {
+    const s = storage ?? (typeof window !== 'undefined' ? window.localStorage : undefined);
+    if (!s) return;
+    s.setItem(STORAGE_KEYS.STEP_TICKS, JSON.stringify(ticks));
+  } catch {
+    // Ignore storage issues
+  }
+}
+
 const TAB_ORDER: TabType[] = ['scan', 'weather', 'field-log'];
 
 export function getTabOrderIndex(tab: TabType): number {
@@ -88,6 +114,38 @@ export function getSeverityStyle(severity: SeverityLevel): {
     case 'low':
     default:
       return {
+        color: '#34796E',
+        bg: 'rgba(52, 121, 110, 0.12)',
+        border: 'rgba(52, 121, 110, 0.25)',
+      };
+  }
+}
+
+export function getUrgencyStyle(urgency: UrgencyLevel): {
+  label: string;
+  color: string;
+  bg: string;
+  border: string;
+} {
+  switch (urgency) {
+    case 'act_today':
+      return {
+        label: 'Act Today',
+        color: '#A8423F',
+        bg: 'rgba(168, 66, 63, 0.12)',
+        border: 'rgba(168, 66, 63, 0.3)',
+      };
+    case 'act_this_week':
+      return {
+        label: 'Act This Week',
+        color: '#C0772C',
+        bg: 'rgba(192, 119, 44, 0.12)',
+        border: 'rgba(192, 119, 44, 0.3)',
+      };
+    case 'monitor':
+    default:
+      return {
+        label: 'Monitor',
         color: '#34796E',
         bg: 'rgba(52, 121, 110, 0.12)',
         border: 'rgba(52, 121, 110, 0.25)',

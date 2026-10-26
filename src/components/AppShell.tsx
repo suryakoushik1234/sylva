@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { TopBar } from './Navigation/TopBar';
 import { Sidebar } from './Navigation/Sidebar';
 import { BottomTabBar } from './Navigation/BottomTabBar';
+import { ChatbotBar } from './Chat/ChatbotBar';
 import { ScanTab } from './Tabs/ScanTab';
 import { WeatherTab } from './Tabs/WeatherTab';
 import { FieldLogTab } from './Tabs/FieldLogTab';
@@ -44,7 +45,7 @@ export const AppShell: React.FC = () => {
         {/* Dynamic Tab Content Area */}
         <main
           id="main-tab-content"
-          className="flex-1 p-4 sm:p-6 md:p-8 pb-28 md:pb-8 overflow-x-hidden min-w-0"
+          className="flex-1 p-4 sm:p-6 md:p-8 pb-36 md:pb-28 overflow-x-hidden min-w-0"
         >
           <AnimatePresence mode="wait" custom={tabDirection}>
             <motion.div
@@ -66,6 +67,9 @@ export const AppShell: React.FC = () => {
 
       {/* Floating Bottom Tab Bar on mobile (<768px) */}
       <BottomTabBar />
+
+      {/* Floating Sylva Agronomist Voice & Chatbot Bar */}
+      <ChatbotBar />
     </div>
   );
 };
