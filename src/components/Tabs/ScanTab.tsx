@@ -8,8 +8,6 @@ import {
   ArrowRight,
   Leaf,
   AlertTriangle,
-  X,
-  Award,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { BOUNCY_SPRING } from '../../theme';
@@ -23,7 +21,6 @@ import {
 import { getSeverityStyle } from '../../utils/storage';
 import { ActionPlanCard } from '../Cards/ActionPlanCard';
 import { PathologyHeatmapCanvas } from '../Cards/PathologyHeatmapCanvas';
-import { HackathonDemoDeck } from '../Cards/HackathonDemoDeck';
 import { computeFoliarAnalysis } from '../../utils/pathology';
 
 const COMMON_CROPS = [
@@ -42,15 +39,7 @@ const COMMON_CROPS = [
   'Chickpea / Gram',
 ];
 
-interface ScanTabProps {
-  showDemoPresetsModal?: boolean;
-  onCloseDemoPresetsModal?: () => void;
-}
-
-export const ScanTab: React.FC<ScanTabProps> = ({
-  showDemoPresetsModal = false,
-  onCloseDemoPresetsModal,
-}) => {
+export const ScanTab: React.FC = () => {
   const { language, latestDiagnosis, setLatestDiagnosis, addScan, setActiveTab } = useApp();
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -65,20 +54,20 @@ export const ScanTab: React.FC<ScanTabProps> = ({
 
   const titles: Record<string, { title: string; subtitle: string }> = {
     en: {
-      title: 'Scan',
-      subtitle: 'Photograph a crop leaf for instant pathology diagnosis and IPM recovery.',
+      title: 'Scan & Diagnose',
+      subtitle: 'Photograph a crop leaf for instant pathology diagnosis and IPM recovery plan.',
     },
     hi: {
-      title: 'स्कैन',
-      subtitle: 'त्वरित निदान और उपचार के लिए फसल की पत्ती की तस्वीर लें।',
+      title: 'स्कैन और निदान',
+      subtitle: 'त्वरित निदान और उपचार योजना के लिए फसल की पत्ती की तस्वीर लें।',
     },
     te: {
-      title: 'స్కాన్',
-      subtitle: 'తక్షణ రోగనిర్ధారణ మరియు చికిత్స కోసం పంట ఆకును ఫోటో తీయండి.',
+      title: 'స్కాన్ మరియు రోగనిర్ధారణ',
+      subtitle: 'తక్షణ రోగనిర్ధారణ మరియు సమగ్ర యాజమాన్య ప్రణాళిక కోసం పంట ఆకును ఫోటో తీయండి.',
     },
     kn: {
-      title: 'ಸ್ಕ್ಯಾನ್',
-      subtitle: 'ತ್ವರಿತ ರೋಗನಿರ್ಣಯ ಮತ್ತು ಚಿಕಿತ್ಸೆಗಾಗಿ ಬೆಳೆಯ ಎಲೆಯ ಫೋಟೋ ತೆಗೆದುಕೊಳ್ಳಿ.',
+      title: 'ಸ್ಕ್ಯಾನ್ ಮತ್ತು ರೋಗನಿರ್ಣಯ',
+      subtitle: 'ತ್ವರಿತ ರೋಗನಿರ್ಣಯ ಮತ್ತು ಚಿಕಿತ್ಸಾ ಯೋಜನೆಯನ್ನು ಪಡೆಯಲು ಬೆಳೆಯ ಎಲೆಯ ಫೋಟೋ ತೆಗೆದುಕೊಳ್ಳಿ.',
     },
   };
 
@@ -310,36 +299,8 @@ export const ScanTab: React.FC<ScanTabProps> = ({
         aria-label="Take leaf photo with camera"
       />
 
-      {/* Modal for 1-Click Judge Demo Scenarios */}
-      <AnimatePresence>
-        {showDemoPresetsModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 16 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 16 }}
-              transition={BOUNCY_SPRING}
-              className="relative w-full max-w-4xl"
-            >
-              <button
-                onClick={onCloseDemoPresetsModal}
-                className="absolute top-4 right-4 z-10 p-2 rounded-xl bg-[var(--surface-glass-elevated)] border border-[var(--glass-border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer shadow-xs"
-                aria-label="Close presets modal"
-              >
-                <X className="w-4 h-4" />
-              </button>
-              <HackathonDemoDeck
-                onPresetSelected={() => {
-                  if (onCloseDemoPresetsModal) onCloseDemoPresetsModal();
-                }}
-              />
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
       <AnimatePresence mode="wait">
-        {/* State 1: Active Diagnosis Results — Wide Multi-Column Layout */}
+        {/* State 1: Active Diagnosis Results — Clean Wide Multi-Column Layout */}
         {latestDiagnosis && !isAnalyzing ? (
           <motion.div
             key="diagnosis-result"
@@ -349,28 +310,36 @@ export const ScanTab: React.FC<ScanTabProps> = ({
             transition={BOUNCY_SPRING}
             className="space-y-6"
           >
-            {/* Top Bar with Diagnosis Headline & Compact Demo Switcher */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--glass-border-subtle)]">
-              <div className="space-y-0.5">
+            {/* Headline Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--glass-border-subtle)]">
+              <div className="space-y-1">
                 <div className="text-xs font-bold uppercase tracking-wider text-[var(--primary-accent)] flex items-center gap-2">
-                  <span>AI Pathology Assessment</span>
+                  <span>Plant Pathology Diagnostic</span>
                   <span>·</span>
-                  <span className="text-[var(--text-secondary)]">Foliar Micro-Inspection</span>
+                  <span className="text-[var(--text-secondary)]">Foliar Micro-Analysis</span>
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--text-primary)]">
                   {latestDiagnosis.cropName} · {latestDiagnosis.conditionName}
                 </h1>
               </div>
 
-              {/* Quick Preset Scenario Switcher Strip */}
-              <div className="shrink-0">
-                <HackathonDemoDeck compact />
+              <div className="flex items-center gap-2">
+                <motion.button
+                  onClick={handleResetScan}
+                  whileHover={{ y: -1 }}
+                  whileTap={{ scale: 0.96 }}
+                  transition={BOUNCY_SPRING}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] text-[var(--text-primary)] text-xs font-semibold hover:border-[var(--primary-accent)]/50 cursor-pointer shadow-2xs"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+                  <span>Scan another</span>
+                </motion.button>
               </div>
             </div>
 
-            {/* WIDE TWO-COLUMN WORKSPACE */}
+            {/* TWO-COLUMN DESKTOP WORKSPACE */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              {/* LEFT COLUMN: Interactive Leaf Pathology Heatmap & Foliar Damage Stage */}
+              {/* LEFT COLUMN: Interactive Leaf Pathology Heatmap & Specimen Canvas */}
               <div className="lg:col-span-7 space-y-4">
                 {latestDiagnosis.foliarAnalysis && latestDiagnosis.imageUrl ? (
                   <PathologyHeatmapCanvas
@@ -389,8 +358,41 @@ export const ScanTab: React.FC<ScanTabProps> = ({
                   </div>
                 )}
 
+                {/* Real Foliage Specimen Quick Switcher */}
+                <div className="sylva-card p-4 space-y-3">
+                  <div className="flex items-center justify-between text-xs font-semibold text-[var(--text-secondary)]">
+                    <span>Inspect Other Field Specimens:</span>
+                    <span>3 real crop foliage leaves</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {REAL_SAMPLE_LEAVES.map((sample) => (
+                      <button
+                        key={sample.id}
+                        onClick={() => handleLoadSample(sample)}
+                        className="p-2 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] hover:border-[var(--primary-accent)] text-left flex items-center gap-2 cursor-pointer transition-all shadow-2xs group"
+                      >
+                        <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-[var(--glass-border)]">
+                          <img
+                            src={sample.imagePath}
+                            alt={sample.label}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[11px] font-bold text-[var(--text-primary)] truncate">
+                            {sample.cropName}
+                          </div>
+                          <div className="text-[10px] text-[var(--text-secondary)] truncate">
+                            {sample.hint}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Footer Scan Actions */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                   <motion.button
                     onClick={handleResetScan}
                     whileHover={{ y: -1 }}
@@ -399,7 +401,7 @@ export const ScanTab: React.FC<ScanTabProps> = ({
                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] text-[var(--text-primary)] text-xs font-semibold hover:border-[var(--primary-accent)]/50 cursor-pointer shadow-xs"
                   >
                     <RotateCcw className="w-4 h-4 text-[var(--text-secondary)]" />
-                    <span>Scan another leaf</span>
+                    <span>Upload New Leaf</span>
                   </motion.button>
 
                   <motion.button
@@ -415,7 +417,7 @@ export const ScanTab: React.FC<ScanTabProps> = ({
                 </div>
               </div>
 
-              {/* RIGHT COLUMN: Agronomic Action Plan & Microclimate Console */}
+              {/* RIGHT COLUMN: Agronomic Action Plan & Recovery Strategy */}
               <div className="lg:col-span-5 space-y-5">
                 {/* Pathology Overview Card */}
                 <div className="sylva-card p-5 sm:p-6 space-y-4">
@@ -542,17 +544,24 @@ export const ScanTab: React.FC<ScanTabProps> = ({
             </div>
           </motion.div>
         ) : (
-          /* State 3: Empty State with Hackathon Deck & Image Capture Area */
+          /* State 3: Clean Empty State & Image Capture Area */
           <motion.div
             key="capture-area"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
             transition={BOUNCY_SPRING}
-            className="space-y-6"
+            className="space-y-6 max-w-3xl mx-auto"
           >
-            {/* Hackathon Evaluation Deck (Prominent for Judges) */}
-            <HackathonDemoDeck />
+            {/* Header */}
+            <div className="space-y-1 text-center pb-2">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--text-primary)]">
+                {copy.title}
+              </h1>
+              <p className="text-sm text-[var(--text-secondary)] max-w-md mx-auto">
+                {copy.subtitle}
+              </p>
+            </div>
 
             {/* Drop / Capture Zone */}
             <div
@@ -679,9 +688,9 @@ export const ScanTab: React.FC<ScanTabProps> = ({
             <div className="space-y-3 pt-2">
               <div className="flex items-center justify-between px-1">
                 <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
-                  Try a sample (Real Foliage Photos)
+                  Try a Specimen (Real Foliage Photos)
                 </span>
-                <span className="text-xs text-[var(--text-secondary)]">Runs real diagnosis route</span>
+                <span className="text-xs text-[var(--text-secondary)]">Authentic crop pathology</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

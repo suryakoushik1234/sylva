@@ -10,14 +10,14 @@ Welcome to **Sylva**, an AI-powered agricultural crop disease & pest detection s
 - **Server**: Express fullstack server in `/server.ts` with Gemini API (`gemini-2.5-flash`) for `/api/diagnose` and `/api/chat`.
 - **State Management**: `src/context/AppContext.tsx` (manages active tab, diagnosis records, weather/spray state, selected language, and theme).
 - **Core Tabs & Standout Features**:
-  1. **Scan (`src/components/Tabs/ScanTab.tsx`)**: Wide 12-column desktop stage featuring:
+  1. **Top-Aligned Glass Navigation Bar (`src/components/Navigation/TopBar.tsx`)**: Full top glass header adhering to the 3-zone Top Bar Contract, seamlessly persisting across the app and providing full 1440px viewport width for the multi-column desktop dashboard.
+  2. **Scan & Diagnose (`src/components/Tabs/ScanTab.tsx`)**: Wide 12-column desktop stage featuring:
      - **Interactive Leaf Pathology Heatmap (`src/components/Cards/PathologyHeatmapCanvas.tsx`)**: Toggle between *Pathology Heatmap*, *Lesion Contours*, and *Natural Photo*, with opacity slider, foliar necrosis percentage meter (e.g. `42.6% Surface Necrosis`), and interactive hover probe tooltips for localized spore density.
      - **Action Plan Console (`src/components/Cards/ActionPlanCard.tsx`)**: Cultural & organic remedies first, biological controls second, chemical category restrictions last, with calendar ICS reminders.
-  2. **Hackathon Judge Demo Deck (`src/components/Cards/HackathonDemoDeck.tsx`)**: 1-click live demo presets (*Tomato Late Blight*, *Potato Foliar Blight*, *Maize Common Rust*) for instant 5-second evaluations during live judging.
-  3. **Top Glass Navigation Bar (`src/components/Navigation/TopBar.tsx`)**: Full top glass header adhering to the 3-zone Top Bar Contract, freeing full 1440px viewport width for the multi-column dashboard.
-  4. **Weather (`src/components/Tabs/WeatherTab.tsx`)**: Minimalist decision-first microclimate engine powered by Open-Meteo API. Computes 48h future-only optimal spraying windows, 24h suitability strip, and disease risks.
-  5. **Field Log (`src/components/Tabs/FieldLogTab.tsx`)**: Chronological timeline of scanned crops, treatment statuses, and calendar reminders.
-  6. **Floating Assistant (`src/components/Chat/ChatbotBar.tsx`)**: 56×56px floating action button (FAB) that expands with Framer Motion spring physics into an agronomist chat panel with voice speech-to-text dictation.
+     - **Authentic Foliage Leaf Samples**: Real specimens (Tomato, Potato, Maize) from `/public/samples/`.
+  3. **Weather (`src/components/Tabs/WeatherTab.tsx`)**: Minimalist decision-first microclimate engine powered by Open-Meteo API. Computes 48h future-only optimal spraying windows, 24h suitability strip, and disease risks.
+  4. **Field Log (`src/components/Tabs/FieldLogTab.tsx`)**: Chronological timeline of scanned crops, treatment statuses, and inline 2-step clear confirmation.
+  5. **Floating Assistant (`src/components/Chat/ChatbotBar.tsx`)**: 56×56px floating action button (FAB) that expands with Framer Motion spring physics into an agronomist chat panel with voice speech-to-text dictation.
 
 ---
 

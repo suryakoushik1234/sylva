@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TopBar } from './Navigation/TopBar';
 import { BottomTabBar } from './Navigation/BottomTabBar';
@@ -11,7 +11,6 @@ import { BOUNCY_SPRING } from '../theme';
 
 export const AppShell: React.FC = () => {
   const { activeTab, tabDirection } = useApp();
-  const [showDemoModal, setShowDemoModal] = useState<boolean>(false);
 
   const tabVariants = {
     enter: (direction: number) => ({
@@ -35,11 +34,11 @@ export const AppShell: React.FC = () => {
 
   return (
     <div className="relative min-h-screen flex flex-col z-10">
-      {/* Top Glass Navigation Bar (Replaces left sidebar with modern dashboard header) */}
-      <TopBar onOpenDemoDeck={() => setShowDemoModal(true)} />
+      {/* Top Glass Navigation Bar (Sticky & Persistent Across App) */}
+      <TopBar />
 
       {/* Main Full-Width Dashboard Container */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 md:px-8 py-5 sm:py-7">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7">
         <main
           id="main-tab-content"
           className="w-full pb-32 md:pb-24 overflow-x-hidden min-w-0"
@@ -54,12 +53,7 @@ export const AppShell: React.FC = () => {
               exit="exit"
               className="w-full"
             >
-              {activeTab === 'scan' && (
-                <ScanTab
-                  showDemoPresetsModal={showDemoModal}
-                  onCloseDemoPresetsModal={() => setShowDemoModal(false)}
-                />
-              )}
+              {activeTab === 'scan' && <ScanTab />}
               {activeTab === 'weather' && <WeatherTab />}
               {activeTab === 'field-log' && <FieldLogTab />}
             </motion.div>

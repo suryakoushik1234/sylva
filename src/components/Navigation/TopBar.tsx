@@ -1,14 +1,10 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Sun, Moon, ScanLine, CloudSun, BookOpenCheck, Award, Sparkles } from 'lucide-react';
+import { Sun, Moon, ScanLine, CloudSun, BookOpenCheck, Sparkles } from 'lucide-react';
 import { Logo } from '../Logo';
 import { LanguageSelector } from './LanguageSelector';
 import { useApp } from '../../context/AppContext';
 import { BOUNCY_SPRING, TABS, TabType } from '../../theme';
-
-interface TopBarProps {
-  onOpenDemoDeck?: () => void;
-}
 
 const TAB_ICONS: Record<TabType, React.ElementType> = {
   scan: ScanLine,
@@ -16,27 +12,32 @@ const TAB_ICONS: Record<TabType, React.ElementType> = {
   'field-log': BookOpenCheck,
 };
 
-export const TopBar: React.FC<TopBarProps> = ({ onOpenDemoDeck }) => {
+export const TopBar: React.FC = () => {
   const { returnToLanding, theme, toggleTheme, activeTab, setActiveTab, language } = useApp();
 
   return (
-    <header className="sticky top-0 z-30 w-full backdrop-blur-xl bg-[var(--surface-glass)] border-b border-[var(--glass-border)] transition-colors shadow-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4 md:gap-8">
+    <header className="sticky top-0 z-40 w-full backdrop-blur-2xl bg-[var(--surface-glass)]/90 border-b border-[var(--glass-border)] transition-colors shadow-xs">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4 md:gap-8">
         {/* Zone 1: Brand Wordmark */}
         <div className="flex items-center gap-3 shrink-0">
           <button
             onClick={returnToLanding}
             aria-label="Return to Sylva home page"
-            className="flex items-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-accent)] rounded-xl p-1"
+            className="flex items-center gap-2.5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-accent)] rounded-xl p-1 group"
           >
             <Logo size="sm" />
+            <div className="hidden sm:flex flex-col text-left">
+              <span className="text-xs font-bold text-[var(--text-secondary)] tracking-wider uppercase">
+                Plant Pathology
+              </span>
+            </div>
           </button>
         </div>
 
-        {/* Zone 2: Navigation Links (Clean Single-Line Tabs) */}
+        {/* Zone 2: Centered Top Navigation Tabs */}
         <nav
           aria-label="Primary Navigation"
-          className="hidden md:flex items-center gap-1.5 p-1 rounded-2xl bg-[var(--surface-glass-elevated)] border border-[var(--glass-border)] shadow-2xs"
+          className="flex items-center gap-1 p-1 rounded-2xl bg-[var(--surface-glass-elevated)] border border-[var(--glass-border)] shadow-2xs"
         >
           {TABS.map((tab) => {
             const Icon = TAB_ICONS[tab.id];
@@ -47,7 +48,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenDemoDeck }) => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative flex items-center gap-2 px-4 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-accent)] ${
+                className={`relative flex items-center gap-2 px-3.5 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-accent)] ${
                   isActive
                     ? 'text-[var(--text-on-accent)]'
                     : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-border-subtle)]'
@@ -67,30 +68,14 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenDemoDeck }) => {
           })}
         </nav>
 
-        {/* Zone 3: Actions & Presets */}
+        {/* Zone 3: Actions (Theme Toggle, Language, Quick Scan) */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          {/* Hackathon Demo Preset Pill (Triggers quick judge scenario) */}
-          <motion.button
-            onClick={() => {
-              setActiveTab('scan');
-              if (onOpenDemoDeck) onOpenDemoDeck();
-            }}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.96 }}
-            transition={BOUNCY_SPRING}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] text-xs font-semibold text-[var(--primary-accent)] hover:border-[var(--primary-accent)] cursor-pointer shadow-2xs transition-all"
-            title="Open 1-Click Judge Demo Scenarios"
-          >
-            <Award className="w-3.5 h-3.5 text-amber-500" />
-            <span className="whitespace-nowrap">Judge Presets</span>
-          </motion.button>
-
           {/* Theme Toggle Button */}
           <motion.button
             onClick={toggleTheme}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.92 }}
-            className="p-2 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] text-[var(--text-primary)] hover:text-[var(--primary-accent)] cursor-pointer shadow-2xs transition-colors flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-accent)]"
+            className="p-2 sm:p-2.5 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-glass-elevated)] text-[var(--text-primary)] hover:text-[var(--primary-accent)] cursor-pointer shadow-2xs transition-colors flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-accent)]"
             title={theme === 'dark' ? 'Switch to Eucalyptus Haze (Light)' : 'Switch to Midnight Sylva (Dark)'}
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
@@ -108,10 +93,10 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenDemoDeck }) => {
             whileHover={{ y: -1 }}
             whileTap={{ scale: 0.96 }}
             transition={BOUNCY_SPRING}
-            className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[var(--primary-accent)] text-[var(--text-on-accent)] text-xs font-semibold shadow-xs cursor-pointer hover:opacity-90 whitespace-nowrap"
+            className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--primary-accent)] text-[var(--text-on-accent)] text-xs sm:text-sm font-semibold shadow-xs cursor-pointer hover:opacity-90 whitespace-nowrap"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Quick Scan</span>
+            <span>New Scan</span>
           </motion.button>
         </div>
       </div>
